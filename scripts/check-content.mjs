@@ -38,13 +38,13 @@ for (const route of routes) {
   assert.equal((html.match(/<h1(?:\s|>)/g) || []).length, 1, `Expected one h1: ${route}`);
   assert.ok(/<title>[^<]+<\/title>/.test(html), `Missing title: ${route}`);
   for (const match of html.matchAll(/<a\s[^>]*href="([^"]+)"/g)) {
-    const href = match[1].split('#')[0];
+    const href = match[1].split('#')[0].replace(/\/$/, '');
     if (href.startsWith('/')) assert.ok(known.has(href), `Broken internal link: ${route} → ${href}`);
   }
 }
 const root = await fetch(base, { redirect: 'manual' });
-assert.ok([307,308].includes(root.status), 'Root should redirect');
-assert.equal(root.headers.get('location'), '/en');
+assert.equal(root.status, 200, 'Root should render the language entry page');
+assert.ok((await root.text()).includes('/en/'), 'Root should link to English');
 for (const route of ['/de', '/en/does-not-exist', '/tr/projects/not-a-project']) {
   const response = await fetch(base + route);
   assert.equal(response.status, 404, `Missing route did not return 404: ${route}`);

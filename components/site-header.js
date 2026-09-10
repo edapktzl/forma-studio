@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 import { copy, paths } from '../lib/content';
+import { sitePath } from '../lib/site-path';
 
 export function Brand() {
   return <span className="brand"><span className="brand-mark" aria-hidden="true"><i/><i/><i/></span>forma<span className="brand-dot">®</span></span>;
@@ -12,17 +13,17 @@ export function Brand() {
 
 export function FooterLanguages() {
  const pathname = usePathname();
- return <div>{['en','tr'].map((language, i) => <span key={language}>{i > 0 && <span aria-hidden="true"> / </span>}<a href={pathname.replace(/^\/(en|tr)(?=\/|$)/, `/${language}`)} hrefLang={language} lang={language}>{language === 'en' ? 'English' : 'Türkçe'}</a></span>)}</div>;
+ return <div>{['en','tr'].map((language, i) => <span key={language}>{i > 0 && <span aria-hidden="true"> / </span>}<a href={sitePath(pathname.replace(/^\/(en|tr)(?=\/|$)/, `/${language}`))} hrefLang={language} lang={language}>{language === 'en' ? 'English' : 'Türkçe'}</a></span>)}</div>;
 }
 
 export default function SiteHeader({ locale }) {
   const c = copy[locale];
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/\/$/, '');
   const [open, setOpen] = useState(false);
   const toggle = useRef(null);
   const panel = useRef(null);
   const other = locale === 'en' ? 'tr' : 'en';
-  const alternate = pathname.replace(/^\/(en|tr)(?=\/|$)/, `/${other}`);
+  const alternate = sitePath(pathname.replace(/^\/(en|tr)(?=\/|$)/, `/${other}`) + '/');
 
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {

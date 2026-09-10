@@ -9,7 +9,13 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000 (redirects to `/en`). Turkish content starts at `/tr`. If Windows PowerShell blocks npm scripts, use `npm.cmd` instead of `npm`.
+Open http://localhost:3000 (opens `/en/`). Turkish content starts at `/tr/`. If Windows PowerShell blocks npm scripts, use `npm.cmd` instead of `npm`.
+
+## GitHub Pages
+
+Live website: https://edapktzl.github.io/forma-studio/
+
+Pushes to `main` automatically build and deploy the static site through `.github/workflows/pages.yml`. The Pages build uses `GITHUB_PAGES=true`, exports to `out/`, and prefixes URLs with `/forma-studio`. Local development keeps root-relative URLs. Run `node scripts/check-export.mjs` after a Pages build to verify exported links and assets.
 
 To build and run the production version:
 

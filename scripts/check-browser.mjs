@@ -25,7 +25,7 @@ try {
   const send=(method,params={})=>new Promise((resolve,reject)=>{const n=++id;pending.set(n,msg=>msg.error?reject(new Error(JSON.stringify(msg.error))):resolve(msg.result));ws.send(JSON.stringify({id:n,method,params}));});
   const evaluate=async expression=>{const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw new Error(JSON.stringify(result.exceptionDetails));return result.result.value;};
   const pause=ms=>new Promise(r=>setTimeout(r,ms));
-  const visit=async route=>{await send('Page.navigate',{url:base+route});for(let i=0;i<50;i++){await pause(100);if(await evaluate(`location.pathname===${JSON.stringify(route)} && document.readyState==='complete' && Boolean(document.querySelector('h1'))`))break;}await pause(250);};
+  const visit=async route=>{await send('Page.navigate',{url:base+route});for(let i=0;i<50;i++){await pause(100);if(await evaluate(`location.pathname.replace(/\\/$/,'')===${JSON.stringify(route)} && document.readyState==='complete' && Boolean(document.querySelector('h1'))`))break;}await pause(250);};
   const viewport=async(width,height=950)=>send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
   const screenshot=async name=>{const {data}=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(output,name+'.png'),Buffer.from(data,'base64'));};
   await send('Page.enable');await send('Runtime.enable');
@@ -53,13 +53,13 @@ try {
   assert.equal(await evaluate('document.querySelector(".menu-toggle").getAttribute("aria-expanded")'),'false');
   await evaluate('document.querySelector(".menu-toggle").click()');await pause(100);
   await evaluate('document.querySelectorAll("#mobile-navigation a")[1].click()');await pause(700);
-  assert.equal(await evaluate('location.pathname'),'/tr/about');
+  assert.equal(await evaluate('location.pathname'),'/tr/about/');
   assert.equal(await evaluate('Boolean(document.querySelector("#mobile-navigation"))'),false);
   await visit('/tr/projects/the-olive-house');
-  assert.equal(await evaluate('document.querySelector(".language-switch a").getAttribute("href")'),'/en/projects/the-olive-house');
+  assert.equal(await evaluate('document.querySelector(".language-switch a").getAttribute("href")'),'/en/projects/the-olive-house/');
   await evaluate('document.querySelector(".language-switch a").click()');await pause(1000);
   assert.equal(await evaluate('document.documentElement.lang'),'en');
-  assert.equal(await evaluate('location.pathname'),'/en/projects/the-olive-house');
+  assert.equal(await evaluate('location.pathname'),'/en/projects/the-olive-house/');
   await visit('/en/services');await evaluate('document.querySelector("summary").click()');
   assert.equal(await evaluate('document.querySelector("details").open'),true);
   console.log('PASS: project filters, mobile menu, Escape, mobile links, language switching, and FAQs.');
