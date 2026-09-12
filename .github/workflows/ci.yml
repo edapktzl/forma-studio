@@ -106,8 +106,19 @@ jobs:
             set -eu
             cd /opt/forma-studio
             export IMAGE_TAG=main-${{ github.sha }}
-            docker compose --env-file .env -f docker-compose.yml -f docker-compose.prod.yml pull
-            docker compose --env-file .env -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans
-            docker compose --env-file .env -f docker-compose.yml -f docker-compose.prod.yml ps
-            curl --fail --silent https://api.edanurpektezel.com/api/v1/health
+            compose='docker compose --env-file .env -f docker-compose.yml -f docker-compose.prod.yml'
+            trap '$compose ps; $compose logs --tail=80 api caddy || true' ERR
+            $compose pull
+            $compose up -d --remove-orphans
+            for attempt in $(seq 1 12); do
+              if curl --fail --silent http://127.0.0.1:8000/api/v1/health; then
+                break
+              fi
+              if [ "$attempt" = 12 ]; then
+                echo 'API did not become healthy in 60 seconds.'
+                exit 1
+              fi
+              sleep 5
+            done
+            $compose ps
             docker image prune -f
