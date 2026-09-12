@@ -110,6 +110,8 @@ jobs:
             trap '$compose ps; $compose logs --tail=80 api caddy || true' ERR
             $compose pull
             $compose up -d --remove-orphans
+            # Caddyfile is a bind mount; recreate Caddy so a changed file is loaded.
+            $compose up -d --force-recreate --no-deps caddy
             for attempt in $(seq 1 12); do
               if curl --fail --silent http://127.0.0.1:8000/api/v1/health; then
                 break
