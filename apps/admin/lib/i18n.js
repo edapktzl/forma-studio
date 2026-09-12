@@ -1,0 +1,6 @@
+'use client';
+import {createContext,useContext,useEffect,useState} from 'react';
+const words={en:{overview:'Overview',projects:'Projects',journal:'Journal',testimonials:'Testimonials',messages:'Messages',media:'Image library',categories:'Categories',management:'STUDIO MANAGEMENT',signout:'Sign out',website:'View website',retry:'Try again',workspace:'Opening your workspace…',session:'Unable to open your workspace',back:'Back to sign in'},tr:{overview:'Genel bakış',projects:'Projeler',journal:'Yazılar',testimonials:'Müşteri yorumları',messages:'Mesajlar',media:'Görsel arşivi',categories:'Kategoriler',management:'STÜDYO YÖNETİMİ',signout:'Çıkış yap',website:'Siteyi görüntüle',retry:'Tekrar dene',workspace:'Çalışma alanınız açılıyor…',session:'Çalışma alanı açılamadı',back:'Girişe dön'}};
+const Context=createContext(null);
+export function AdminLanguageProvider({children}){const [language,setLanguage]=useState('en');useEffect(()=>{const v=localStorage.getItem('forma-admin-language');if(v==='tr'||v==='en')setLanguage(v)},[]);const change=v=>{setLanguage(v);localStorage.setItem('forma-admin-language',v)};return <Context.Provider value={{language,setLanguage:change,t:k=>words[language][k]||words.en[k]||k}}>{children}</Context.Provider>}
+export function useAdminLanguage(){return useContext(Context)||{language:'en',setLanguage:()=>{},t:k=>words.en[k]||k}}

@@ -71,8 +71,8 @@ try {
   for (const locale of ['en','tr']) {
    await visit(`/${locale}/contact`);
    assert.equal(await evaluate('document.querySelector("form").checkValidity()'),false);
-   assert.deepEqual(await evaluate('Array.from(document.querySelectorAll("form input, form textarea")).map(el=>el.name)'),['name','email','phone','subject','message']);
-   await evaluate(`document.querySelector('#name').value='Test Visitor';document.querySelector('#email').value='invalid';document.querySelector('#phone').value='+90 555 123 4567';document.querySelector('#subject').value='Project enquiry';document.querySelector('#message').value='I would like to discuss a residential project.';`);
+   assert.deepEqual(await evaluate('Array.from(document.querySelectorAll("form input, form textarea")).map(el=>el.name)'),['first_name','last_name','email','phone','subject','message']);
+   await evaluate(`document.querySelector('#first_name').value='Test';document.querySelector('#last_name').value='Visitor';document.querySelector('#email').value='invalid';document.querySelector('#phone').value='+90 555 123 4567';document.querySelector('#subject').value='Project enquiry';document.querySelector('#message').value='I would like to discuss a residential project.';`);
    assert.equal(await evaluate('document.querySelector("form").checkValidity()'),false);
    await evaluate(`document.querySelector('#email').value='visitor@example.com';document.querySelector('form').requestSubmit();`);
    await pause(300);
@@ -81,7 +81,7 @@ try {
    assert.equal(await evaluate('document.querySelectorAll("a[download]").length'),0);
    await screenshot(`contact-success-${locale}`);
    await evaluate('document.querySelector(".form-success .text-link").click()');await pause(100);
-   assert.equal(await evaluate('document.querySelector("#name").value'),'Test Visitor');
+   assert.equal(await evaluate('document.querySelector("#first_name").value'),'Test');
    assert.equal(await evaluate('document.activeElement.id'),'name');
   }
   assert.deepEqual(submissions,[], 'Static form must not send messages');

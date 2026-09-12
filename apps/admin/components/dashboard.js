@@ -1,0 +1,10 @@
+'use client';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { api } from '../lib/api-client';
+export default function Dashboard(){
+ const [data,setData]=useState(null),[error,setError]=useState(''),[attempt,setAttempt]=useState(0);
+ useEffect(()=>{api('/admin/dashboard').then(setData).catch(e=>setError(e.message));},[attempt]);
+ const cards=[['projects','Projects','/projects'],['articles','Journal entries','/articles'],['testimonials','Testimonials','/testimonials'],['unread_messages','Unread messages','/messages']];
+ return <main className="content"><div className="page-heading"><div><p className="eyebrow">YOUR STUDIO, AT A GLANCE</p><h1>Room to create.</h1><p>Keep your portfolio current and your conversations moving.</p></div><Link className="primary" href="/projects?new=1">Add a project ↗</Link></div>{error&&<div className="notice error" role="alert">{error}<button onClick={()=>{setError('');setAttempt(n=>n+1);}}>Retry</button></div>}<div className="stat-grid">{cards.map(([key,label,href])=><Link className="stat-card" key={key} href={href}><span>{label} ↗</span><strong>{data?data[key]:'—'}</strong><small>Open {label.toLowerCase()}</small></Link>)}</div><section className="overview-grid"><div className="editorial-card"><p className="eyebrow">MAKE YOUR NEXT IMPRESSION</p><h2>Every space<br/>has a story.</h2><p>Add the project, bring together its images, and tell its story in English and Turkish. Publish when both versions are ready.</p><Link className="text-link" href="/projects">Explore your portfolio ↗</Link></div><div className="quick-links"><h2>On your desk</h2>{[['Write a journal entry','Share an idea, a material or a milestone.','/articles'],['Read your messages','Turn a first hello into a conversation.','/messages'],['Organize your imagery','Upload photographs and find your next cover.','/media']].map(([title,text,href])=><Link key={href} href={href}><div><h3>{title}</h3><p>{text}</p></div><span>↗</span></Link>)}</div></section></main>;
+}

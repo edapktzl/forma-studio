@@ -1,12 +1,14 @@
 'use client';
-import { useState } from 'react';
-import { copy, projects } from '../lib/content';
-import { ProjectCard } from './ui';
-
-export default function ProjectGallery({ locale }) {
- const [selected, setSelected] = useState('all');
- const c = copy[locale].projects;
- const types = ['all', 'residential', 'workplace', 'hospitality'];
- const visible = projects.filter(p => selected === 'all' || p.type === selected);
- return <><div className="project-filters"><div role="group" aria-label={locale === 'en' ? 'Filter projects' : 'Projeleri filtrele'}>{types.map((type,i) => <button key={type} aria-pressed={selected === type} onClick={() => setSelected(type)}>{c.filters[i]}</button>)}</div><span aria-live="polite">{visible.length} {c.count}</span></div><div className="project-grid">{visible.map(project => <ProjectCard key={project.slug} project={project} locale={locale}/>)}</div><p className="portfolio-note">{c.disclaimer}</p></>;
+import {useEffect,useState} from 'react';
+import {copy,projects} from '../lib/content';
+import {getProjects,getProjectCategories,isApiConfigured,mediaUrl} from '../lib/api-client';
+import {ProjectCard} from './ui';
+export default function ProjectGallery({locale,featured=false}){
+ const c=copy[locale].projects,live=isApiConfigured();
+ const [selected,setSelected]=useState('all'),[items,setItems]=useState([]),[categories,setCategories]=useState([]),[page,setPage]=useState(1),[total,setTotal]=useState(0),[loading,setLoading]=useState(live),[error,setError]=useState(false),[attempt,setAttempt]=useState(0);
+ useEffect(()=>{if(!live)return;let active=true;setLoading(true);setError(false);getProjects(locale,{category:selected==='all'?null:selected,page,page_size:featured?2:12,featured:featured?true:undefined}).then(data=>{if(active){setItems(data.items);setTotal(data.total);}}).catch(()=>{if(active)setError(true);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[locale,selected,page,featured,attempt,live]);
+ useEffect(()=>{if(!live||featured)return;let active=true;getProjectCategories(locale).then(data=>{if(active)setCategories(data);}).catch(()=>{if(active)setError(true);});return()=>{active=false;};},[locale,live,featured,attempt]);
+ const types=live?[{slug:'all',name:c.filters[0]},...categories]:['all','residential','workplace','hospitality'].map((slug,i)=>({slug,name:c.filters[i]}));
+ const visible=live?items.map(p=>({...p,year:p.construction_year,image:mediaUrl(p.image),[locale]:{title:p.title,tag:p.concept,place:p.location}})):projects.filter(p=>selected==='all'||p.type===selected).slice(0,featured?2:100);
+ return <>{!featured&&<div className="project-filters"><div role="group" aria-label={locale==='en'?'Filter projects':'Projeleri filtrele'}>{types.map(type=><button key={type.slug} aria-pressed={selected===type.slug} onClick={()=>{setSelected(type.slug);setPage(1);}}>{type.name}</button>)}</div><span aria-live="polite">{live?total:visible.length} {c.count}</span></div>}{error?<div role="alert"><p>{locale==='tr'?'Projeler şu anda yüklenemiyor.':'Projects are temporarily unavailable.'}</p><button onClick={()=>setAttempt(n=>n+1)}>{locale==='tr'?'Tekrar dene':'Try again'}</button></div>:loading?<p role="status">{locale==='tr'?'Projeler yükleniyor…':'Loading projects…'}</p>:visible.length?<div className={'project-grid '+(featured?'featured-projects':'')}>{visible.map(project=><ProjectCard key={project.slug} project={project} locale={locale}/>)}</div>:<p role="status">{locale==='tr'?'Henüz gösterilecek proje bulunmuyor.':'No projects to display yet.'}</p>}{!featured&&live&&total>12&&<nav className="project-filters" aria-label="Pagination"><button disabled={page===1} onClick={()=>setPage(p=>p-1)}>{locale==='tr'?'Önceki':'Previous'}</button><span>{page} / {Math.ceil(total/12)}</span><button disabled={page*12>=total} onClick={()=>setPage(p=>p+1)}>{locale==='tr'?'Sonraki':'Next'}</button></nav>}</>;
 }

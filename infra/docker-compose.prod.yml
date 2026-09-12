@@ -1,0 +1,64 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - admin
+      - api
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  postgres:
+    restart: unless-stopped
+    shm_size: 128mb
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  api:
+    image: ghcr.io/edapktzl/forma-studio-api:${IMAGE_TAG:-latest}
+    build: null
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: production
+      CORS_ORIGINS: https://www.edanurpektezel.com,https://admin.edanurpektezel.com
+
+  worker:
+    image: ghcr.io/edapktzl/forma-studio-api:${IMAGE_TAG:-latest}
+    build: null
+    restart: unless-stopped
+
+  web:
+    image: ghcr.io/edapktzl/forma-studio-web:${IMAGE_TAG:-latest}
+    build: null
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: https://api.edanurpektezel.com/api/v1
+
+  admin:
+    image: ghcr.io/edapktzl/forma-studio-admin:${IMAGE_TAG:-latest}
+    build: null
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: https://api.edanurpektezel.com/api/v1
+
+  api-migrations:
+    image: ghcr.io/edapktzl/forma-studio-api:${IMAGE_TAG:-latest}
+    build: null
+
+volumes:
+  caddy_data:
+  caddy_config:
