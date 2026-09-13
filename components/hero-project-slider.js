@@ -1,0 +1,92 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { copy, photos, projects } from '../lib/content';
+import { getProjects, isApiConfigured, mediaUrl } from '../lib/api-client';
+import { Picture } from './ui';
+
+function fallbackProjects(locale) {
+ return projects.map(project => ({
+  slug: project.slug,
+  image: project.image,
+  title: project[locale].title,
+  concept: project[locale].tag,
+  location: project[locale].place,
+  year: project.year,
+ }));
+}
+
+function normalizeProjects(items, locale) {
+ return items.filter(item => item?.slug).map(item => ({
+  slug: item.slug,
+  image: mediaUrl(item.image) || photos.hero,
+  title: item.title || item[locale]?.title || item.slug,
+  concept: item.concept || item[locale]?.tag || '',
+  location: item.location || item[locale]?.place || '',
+  year: item.construction_year || item.year || '',
+ }));
+}
+
+export default function HeroProjectSlider({ locale }) {
+ const fallback = useMemo(() => fallbackProjects(locale), [locale]);
+ const [items, setItems] = useState(fallback);
+ const [active, setActive] = useState(0);
+ const [paused, setPaused] = useState(false);
+ const [loaded, setLoaded] = useState(false);
+
+ useEffect(() => {
+  setItems(fallback);
+  setActive(0);
+ }, [fallback]);
+
+ useEffect(() => {
+  if (!isApiConfigured()) return undefined;
+  let current = true;
+  getProjects(locale, { featured: true, page: 1, page_size: 10 })
+   .then(data => {
+    if (!current || !data?.items?.length) return;
+    setItems(normalizeProjects(data.items, locale));
+    setActive(0);
+   })
+   .catch(() => {})
+   .finally(() => { if (current) setLoaded(true); });
+  return () => { current = false; };
+ }, [locale]);
+
+ useEffect(() => {
+  if (items.length < 2 || paused) return undefined;
+  const timer = window.setInterval(() => setActive(index => (index + 1) % items.length), 6000);
+  return () => window.clearInterval(timer);
+ }, [items.length, paused]);
+
+ const project = items[active] || fallback[0];
+ if (!project) return null;
+ const goTo = direction => setActive(index => (index + direction + items.length) % items.length);
+
+ return <div
+  className="hero-image hero-project-slider"
+  role="region"
+  aria-roledescription="carousel"
+  aria-label={locale === 'tr' ? 'Öne çıkan projeler' : 'Featured projects'}
+  onMouseEnter={() => setPaused(true)}
+  onMouseLeave={() => setPaused(false)}
+  onFocus={() => setPaused(true)}
+  onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}
+ >
+  <Picture key={project.slug} src={project.image} alt={`${project.title} — ${project.concept}`} eager={!loaded && active === 0}/>
+  <div className="hero-image-shade"/>
+  <div className="hero-image-caption" aria-live="polite">
+   <div>
+    <span>{project.title}</span>
+    <p>{project.concept}{project.concept && project.location ? ' · ' : ''}{project.location}{project.year ? ` · ${project.year}` : ''}</p>
+   </div>
+   {items.length > 1 && <div className="hero-slider-controls" aria-label={locale === 'tr' ? 'Proje slayt kontrolleri' : 'Project slide controls'}>
+    <button className="hero-slider-control" type="button" onClick={() => goTo(-1)} aria-label={locale === 'tr' ? 'Önceki proje' : 'Previous project'}><ArrowLeft size={19}/></button>
+    <button className="hero-slider-control" type="button" onClick={() => goTo(1)} aria-label={locale === 'tr' ? 'Sonraki proje' : 'Next project'}><ArrowRight size={19}/></button>
+   </div>}
+  </div>
+  <div className="hero-side-label">FORMA — {locale === 'tr' ? 'SEÇİLİ İŞLER' : 'SELECTED WORK'} / {String(active + 1).padStart(2, '0')}</div>
+  {items.length > 1 && <div className="hero-slider-progress" aria-hidden="true"><span>{String(active + 1).padStart(2, '0')}</span><i/><span>{String(items.length).padStart(2, '0')}</span></div>}
+ </div>;
+}

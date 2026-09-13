@@ -70,7 +70,11 @@
  .hero-image-caption { @apply absolute flex items-end justify-between text-white; left:30px; right:30px; bottom:26px; }
  .hero-image-caption div>span { font-size:11px; letter-spacing:1.8px; }
  .hero-image-caption p { font-size:10px; margin-top:7px; opacity:.8; }
- .hero-round-arrow { border:1px solid #ffffff70; border-radius:50%; width:48px; height:48px; display:grid; place-items:center; }
+ .hero-slider-controls { display:flex; gap:8px; }
+ .hero-slider-control { border:1px solid #ffffff70; border-radius:50%; width:42px; height:42px; display:grid; place-items:center; color:#fff; background:transparent; cursor:pointer; transition:background .2s,color .2s; }
+ .hero-slider-control:hover,.hero-slider-control:focus-visible { background:#fff; color:#293f34; outline:none; }
+ .hero-slider-progress { position:absolute; left:28px; top:24px; display:flex; align-items:center; gap:8px; color:#fff; font-size:9px; letter-spacing:1px; text-shadow:0 1px 5px #0009; }
+ .hero-slider-progress i { width:25px; height:1px; background:#ffffff90; }
  .hero-side-label { position:absolute; top:25px; right:25px; color:#fff; writing-mode:vertical-rl; font-size:8px; letter-spacing:2px; text-shadow:0 1px 5px #0009; }
  .hero-bottom { @apply flex items-center justify-between; padding:17px 0; font-size:9px; color:#8a9085; border-bottom:1px solid #dcded5; }
  .hero-bottom>span:nth-child(2) { margin-left:auto; margin-right:32px; font-size:8px; letter-spacing:1px; display:flex; align-items:center; gap:11px; }
