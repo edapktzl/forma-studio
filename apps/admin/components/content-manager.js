@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
+import Link from 'next/link';
 import {api,mediaUrl} from '../lib/api-client';
 import {resources,emptyRecord,titleOf} from '../lib/resources';
 import MediaPicker from './media-picker';
@@ -38,7 +39,11 @@ export default function ContentManager({resource}){
   const props={id:field.key,name:field.key,value:value??'',onChange:e=>onChange(e.target.value),maxLength:field.maxLength,min:field.min,max:field.max,required:field.required};
   if(field.type==='checkbox')return <label className="checkbox-field" key={field.key}><input type="checkbox" checked={!!value} onChange={e=>onChange(e.target.checked)}/>{field.label}</label>;
   if(field.type==='rich')return <div className="field" key={field.key}><span>{field.label} *</span><RichEditor key={(record.id||'new')+language} value={value} onChange={onChange}/></div>;
-  return <label className="field" key={field.key} htmlFor={field.key}>{field.label}{field.required?' *':''}{field.type==='textarea'?<textarea {...props} rows={4}/>:field.type==='category'?<select {...props}><option value="">Select a category</option>{(categories[field.source]||[]).map(c=><option key={c.id} value={c.id} disabled={!c.is_active}>{c.translations.en.name}{!c.is_active?' (inactive)':''}</option>)}</select>:<input {...props} type={field.type} value={field.type==='datetime-local'&&value?localDate(value):props.value}/>} {field.help&&<small className="field-help">{field.help}</small>}</label>;
+  if(field.type==='category'){
+   const options=categories[field.source]||[];
+   return <div className="field" key={field.key}><label htmlFor={field.key}>{field.label}{field.required?' *':''}</label><select {...props}><option value="">Select a category</option>{options.map(c=>{const name=c.translations?.en?.name||c.translations?.tr?.name||c.name||c.slug;return <option key={c.id} value={c.id} disabled={!c.is_active}>{name}{!c.is_active?' (inactive)':''}</option>;})}</select>{!options.length&&<small className="field-help">No categories yet. <Link href="/categories/">Create one from Categories</Link>.</small>}{field.help&&<small className="field-help">{field.help}</small>}</div>;
+  }
+  return <label className="field" key={field.key} htmlFor={field.key}>{field.label}{field.required?' *':''}{field.type==='textarea'?<textarea {...props} rows={4}/>:<input {...props} type={field.type} value={field.type==='datetime-local'&&value?localDate(value):props.value}/>} {field.help&&<small className="field-help">{field.help}</small>}</label>;
  }
  const visible=items.filter(item=>(titleOf(item)+' '+(item.slug||'')).toLowerCase().includes(query.toLowerCase())&&(filter==='all'||item.status===filter));
  return <main className="content">

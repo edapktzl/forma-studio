@@ -18,4 +18,6 @@ def test_initial_migration_can_generate_postgresql_sql():
     assert result.returncode == 0, result.stderr
     assert "CREATE TABLE projects" in result.stdout
     assert "CREATE TABLE project_translations" in result.stdout
+    assert "INSERT INTO project_categories" in result.stdout
+    assert "Konut" in result.stdout
     assert "COMMIT;" in result.stdout
