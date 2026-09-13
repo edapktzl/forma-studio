@@ -19,6 +19,11 @@ www.edanurpektezel.com {
   reverse_proxy web:3000
 }
 
+forma-studio.edanurpektezel.com {
+  import security_headers
+  reverse_proxy web:3000
+}
+
 admin.edanurpektezel.com {
   import security_headers
   header X-Robots-Tag "noindex, nofollow"

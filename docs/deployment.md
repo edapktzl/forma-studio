@@ -31,7 +31,7 @@ Set `IMAGE_TAG=main-<full-commit-sha>` in `.env` so later manual restarts use th
 
 ## DNS and first start
 
-Create A records in Cloudflare for `www`, `admin` and `api` pointing to the VM public IP. Set Cloudflare SSL/TLS to `Full (strict)`. After DNS resolves, start the stack:
+Create A records in Cloudflare for `www`, `forma-studio`, `admin` and `api` pointing to the VM public IP. Set Cloudflare SSL/TLS to `Full (strict)`. After DNS resolves, start the stack:
 
 ```bash
 cd /opt/forma-studio
@@ -41,7 +41,7 @@ docker compose --env-file .env -f docker-compose.yml -f docker-compose.prod.yml 
 curl --fail --retry 8 --retry-connrefused --retry-delay 5 https://api.edanurpektezel.com/api/v1/health
 ```
 
-Caddy obtains and renews the Let’s Encrypt certificates automatically. Its `/data` and `/config` volumes must not be removed.
+Caddy obtains and renews the Let’s Encrypt certificates automatically for all four hostnames. The `forma-studio.edanurpektezel.com` host uses the existing `web:3000` container, so no new application port or container is required. Its `/data` and `/config` volumes must not be removed.
 
 Caddy applies HTTPS/security headers and limits API request bodies to 12 MB. The application applies a smaller image-upload limit. The admin/API `noindex` header discourages indexing; authorization is enforced by the API. A healthy API does not prove login, content editing, contact submissions or e-mail delivery work: test these separately. Without Resend credentials, messages remain saved and notification jobs wait for configuration.
 

@@ -30,7 +30,7 @@ fi
 # Caddy's config is a bind mount; replace the container to read the copied file.
 "${compose[@]}" up -d --force-recreate --no-deps caddy
 curl --fail --silent --show-error --retry 8 --retry-connrefused --retry-delay 5 --max-time 15 http://127.0.0.1:8000/api/v1/health
-for url in https://www.edanurpektezel.com/ https://admin.edanurpektezel.com/login/ https://api.edanurpektezel.com/api/v1/health; do
+for url in https://www.edanurpektezel.com/ https://forma-studio.edanurpektezel.com/ https://admin.edanurpektezel.com/login/ https://api.edanurpektezel.com/api/v1/health; do
   curl --fail --silent --show-error --output /dev/null --retry 8 --retry-connrefused --retry-delay 5 --max-time 15 "$url"
 done
 
