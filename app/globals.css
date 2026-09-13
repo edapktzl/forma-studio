@@ -183,7 +183,12 @@
  .service-detail h2 { font-size:38px; }
  .service-detail p:not(.eyebrow) { font-size:13px; color:#7d8774; margin-top:22px; }
  .service-detail ul { margin:25px 0; padding:0; list-style:none; }
- .service-detail li { display:flex; justify-content:space-between; gap:15px; padding:12px 0; border-bottom:1px solid #dce1d2; font-size:11px; }
+ .service-detail li { padding:12px 0; border-bottom:1px solid #dce1d2; font-size:11px; }
+ .service-offering summary { display:flex; justify-content:space-between; align-items:center; gap:15px; cursor:pointer; list-style:none; }
+ .service-offering summary::-webkit-details-marker { display:none; }
+ .service-offering summary svg { flex-shrink:0; transition:transform .2s; }
+ .service-offering[open] summary svg { transform:rotate(45deg); }
+ .service-offering p { color:#79866c; font-size:12px; line-height:1.65; margin:15px 28px 5px 0; }
  .process-section { background:#344a3b; color:white; }
  .process-grid { @apply grid grid-cols-4; gap:35px; margin-top:50px; }
  .process-grid article { padding-top:20px; border-top:1px solid #6f8260; }
