@@ -32,10 +32,21 @@ def decode_image(data, filename, mime):
                 source.verify()
             with Image.open(BytesIO(data)) as source:
                 source.load()
+                # Keep the original encoded file whenever no orientation
+                # correction is needed. Re-encoding a JPEG/WebP with Pillow's
+                # defaults is lossy and can make uploaded work look blurry.
+                orientation = source.getexif().get(274, 1)
+                if orientation in (None, 1):
+                    return data, FORMATS[actual_format]
                 processed = ImageOps.exif_transpose(source)
                 if actual_format == "JPEG": processed = processed.convert("RGB")
                 output = BytesIO()
-                processed.save(output, format=actual_format)
+                if actual_format == "JPEG":
+                    processed.save(output, format="JPEG", quality=98, subsampling=0, optimize=True, progressive=True)
+                elif actual_format == "WEBP":
+                    processed.save(output, format="WEBP", lossless=True, method=6)
+                else:
+                    processed.save(output, format="PNG", optimize=True)
                 return output.getvalue(), FORMATS[actual_format]
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError, Image.DecompressionBombWarning):
         raise HTTPException(422, "Invalid image, or image dimensions exceed the 20 megapixel limit.")
