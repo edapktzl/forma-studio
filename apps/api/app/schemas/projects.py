@@ -5,10 +5,12 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 class ProjectTranslationData(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
-    title: str = Field(min_length=2, max_length=180)
-    concept: str = Field(min_length=2, max_length=240)
-    short_description: str = Field(min_length=2, max_length=500)
-    description: str = Field(min_length=2, max_length=50_000)
+    # Draft projects may be saved before the copy is finished. Publication
+    # validates these fields in ensure_publishable().
+    title: str = Field(default="", max_length=180)
+    concept: str = Field(default="", max_length=240)
+    short_description: str = Field(default="", max_length=500)
+    description: str = Field(default="", max_length=50_000)
     challenge: str | None = Field(default=None, max_length=20_000)
     approach: str | None = Field(default=None, max_length=20_000)
     outcome: str | None = Field(default=None, max_length=20_000)
