@@ -188,7 +188,7 @@
  .service-offering summary::-webkit-details-marker { display:none; }
  .service-offering summary svg { flex-shrink:0; transition:transform .2s; }
  .service-offering[open] summary svg { transform:rotate(45deg); }
- .service-offering p { color:#79866c; font-size:12px; line-height:1.65; margin:15px 28px 5px 0; }
+ .service-detail .service-offering p { color:#79866c; font-size:12px; line-height:1.65; margin:15px 28px 5px 0; }
  .process-section { background:#344a3b; color:white; }
  .process-grid { @apply grid grid-cols-4; gap:35px; margin-top:50px; }
  .process-grid article { padding-top:20px; border-top:1px solid #6f8260; }
