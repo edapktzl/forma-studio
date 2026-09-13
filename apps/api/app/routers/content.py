@@ -42,6 +42,10 @@ def public_article(record, language):
 
 def check_article(record):
     bilingual({t.language_code:t for t in record.translations})
+    if record.category and not record.category.is_active:
+        raise HTTPException(422, "Choose an active category before publishing.")
+    if any(not t.title.strip() or not t.excerpt.strip() for t in record.translations):
+        raise HTTPException(422, "Complete both article titles and excerpts before publishing.")
     if not record.cover or record.cover.deleted_at:
         raise HTTPException(422, "Choose a cover image before publishing.")
     if any(len(unescape(re.sub(r"<[^>]*>", "", sanitize_html(t.content_html))).strip()) < 2 for t in record.translations):

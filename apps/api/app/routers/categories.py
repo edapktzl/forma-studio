@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,9 +12,11 @@ router = APIRouter(prefix="/admin", tags=["admin-categories"])
 public_router = APIRouter(tags=["categories"])
 
 class CategoryTranslation(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
     name: str = Field(min_length=2, max_length=120)
 
 class CategoryData(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
     slug: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$", max_length=80)
     sort_order: int = Field(default=0, ge=0)
     is_active: bool = True

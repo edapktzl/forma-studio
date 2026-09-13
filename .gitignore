@@ -7,3 +7,17 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 storage/
+.venv/
+.venv-*/
+venv/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage/
+*.log
+*.pem
+*.key
+*.sql
+*.sql.gz
+.DS_Store
+Thumbs.db

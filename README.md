@@ -84,6 +84,12 @@ Both Next.js applications receive `NEXT_PUBLIC_API_URL` at build time. Rebuild a
 
 Once the API is running, run `python scripts/bootstrap-local-admin.py` to create the local administrator. Its random login credentials are saved in `.env.admin.local`, which is excluded from Git and Docker images. Re-running the command preserves the existing account. The script refuses to provision production environments.
 
+### Which credential goes where?
+
+`.env.admin.local` contains the admin panel login (`email` and `password`) for local development. It is a JSON file and must not be copied to the VPS or committed. The API does not have a separate “API email and password” login: the admin panel authenticates with the account created by the bootstrap/seed step.
+
+The VPS `/opt/forma-studio/.env` file contains infrastructure settings. `POSTGRES_PASSWORD` is only the PostgreSQL database password, `JWT_SECRET` signs admin sessions, `RESEND_API_KEY` is the mail provider API key, `MAIL_FROM` is the verified sender address, and `ADMIN_NOTIFICATION_EMAIL` is the address that receives contact notifications. These values are one per line as `KEY=value`; do not include angle brackets or quotes unless the value itself requires them. Keep this file private and set permissions to `chmod 600 /opt/forma-studio/.env`.
+
 The admin panel includes a dashboard, bilingual project and article editors, testimonials, category management, an image library and a message inbox. Projects support gallery ordering and cover selection. Articles use a block editor for paragraphs, headings, quotes and lists. Publication checks require both languages and a cover for projects and articles. Public lists and detail routes read published API content when configured, including newly created slugs. Admin sessions use HttpOnly cookies, CSRF verification and refresh-token rotation.
 
 The API uses FastAPI, async SQLAlchemy, PostgreSQL, and Alembic. Public routes are versioned under `/api/v1`; admin writes require authentication. Image uploads currently use the local media volume; the R2 adapter remains pending. Service content and general site settings do not yet have admin editors. Configure `RESEND_API_KEY`, `MAIL_FROM`, and `ADMIN_NOTIFICATION_EMAIL` to enable the notification worker. From `apps/api`, local API smoke tests run with `python -m pytest tests` after installing `requirements.txt`.

@@ -4,20 +4,17 @@ The production stack runs on the Ubuntu 22.04 OCI VM at `/opt/forma-studio`. The
 
 ## One-time server setup
 
-SSH to the VM and run the preparation script from a trusted checkout, or execute its commands manually:
+Run `scripts/prepare-oci.sh` from a trusted checkout as the SSH deploy user. In an SSH session the script uses the current client IP. For a console session, set an explicit IP/CIDR:
 
 ```bash
-sudo apt update && sudo apt upgrade -y
-sudo fallocate -l 2G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile && sudo swapon /swapfile
-echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
-curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker "$USER"
-sudo install -d -m 0750 -o "$USER" -g "$USER" /opt/forma-studio /opt/backups
+SSH_SOURCE=203.0.113.10/32 bash scripts/prepare-oci.sh
 ```
 
-Log in again after adding the user to the Docker group. Open TCP 22 only from your own fixed IP and TCP 80/443 from the internet in OCI. In UFW, allow the same ports and deny all other incoming traffic. Never publish 3000, 3001, 8000 or 5432.
+Replace the example IP with your address. The script installs Docker from its signed Ubuntu repository, enables it on boot, and creates swap only if absent. Existing swap files and firewall rules are preserved. It refuses to enable UFW without a valid SSH source. Keep your current SSH session open and test a second login. Log in again to activate Docker group membership.
+
+In OCI, allow stateful TCP ingress with **Source Port Range = All** and **Destination Port Range = 80** and **443** from `0.0.0.0/0`. Allow destination port 22 from approved SSH sources. Apply matching OS firewall rules. Standard GitHub-hosted runners have changing IPs: restricting SSH to only your home IP blocks the current deploy workflow. Use a runner with fixed egress or a VPN for a narrow allowlist; otherwise the firewall policy must also allow the deploy runner. Use a dedicated key and disable password SSH authentication. Do not remove working SSH rules blindly.
+
+Only Caddy binds public host ports. Web, admin and API diagnostics bind to `127.0.0.1`; PostgreSQL has no host port. Docker-published ports can bypass UFW, so these loopback bindings and OCI ingress restrictions are intentional.
 
 Copy these files to `/opt/forma-studio`:
 
@@ -25,9 +22,12 @@ Copy these files to `/opt/forma-studio`:
 infra/docker-compose.yml       → docker-compose.yml
 infra/docker-compose.prod.yml  → docker-compose.prod.yml
 infra/Caddyfile                → Caddyfile
+scripts/backup-postgres.sh     → backup-postgres.sh
 ```
 
 Create `/opt/forma-studio/.env` with the production values from `.env.example`. Keep `POSTGRES_PASSWORD`, `JWT_SECRET`, `RESEND_API_KEY` and the notification address private.
+
+Set `IMAGE_TAG=main-<full-commit-sha>` in `.env` so later manual restarts use the deployed release. Apply `chmod 600 /opt/forma-studio/.env`. Do not source `.env` as shell code. Use `docker compose ... config --quiet` for validation; ordinary `config` output expands secrets.
 
 ## DNS and first start
 
@@ -38,10 +38,12 @@ cd /opt/forma-studio
 docker compose --env-file .env -f docker-compose.yml -f docker-compose.prod.yml pull
 docker compose --env-file .env -f docker-compose.yml -f docker-compose.prod.yml up -d
 docker compose --env-file .env -f docker-compose.yml -f docker-compose.prod.yml ps
-curl --fail https://api.edanurpektezel.com/api/v1/health
+curl --fail --retry 8 --retry-connrefused --retry-delay 5 https://api.edanurpektezel.com/api/v1/health
 ```
 
 Caddy obtains and renews the Let’s Encrypt certificates automatically. Its `/data` and `/config` volumes must not be removed.
+
+Caddy applies HTTPS/security headers and limits API request bodies to 12 MB. The application applies a smaller image-upload limit. The admin/API `noindex` header discourages indexing; authorization is enforced by the API. A healthy API does not prove login, content editing, contact submissions or e-mail delivery work: test these separately. Without Resend credentials, messages remain saved and notification jobs wait for configuration.
 
 ## GitHub Actions
 
@@ -55,6 +57,32 @@ VPS_SSH_KEY=<dedicated deploy private key>
 
 The deploy public key belongs in the VM user’s `~/.ssh/authorized_keys`. Enable Actions write permission for packages and make the three GHCR packages public if the VPS will pull without registry credentials. A push to `main` runs tests, builds all three images, tags them with `main-<commit-sha>`, copies the Compose files, pulls the immutable tag and restarts the services.
 
+Only the image-publishing job needs package write permission. A public repository does not automatically make GHCR packages public. The workflow verifies the VPS ED25519 host fingerprint before copying files, serializes production deployments, takes a database backup before migrations, and deploys the immutable `main-<commit-sha>` tag. Update the fingerprint from the trusted OCI console if the server is replaced; never accept a new SSH key blindly. Persisting the deployed image tag in `.env` prevents a manual restart from silently switching to `latest`.
+
 ## Backups and rollback
 
-Run `scripts/backup-postgres.sh` daily from cron. Copy `/opt/backups` to OCI Object Storage or another host; a backup stored only on the VM is not sufficient. To roll back, set `IMAGE_TAG` to a previous `main-<commit-sha>` and run `docker compose pull` followed by `docker compose up -d`. Take a database backup before any destructive migration.
+The backup script uses PostgreSQL's container environment, locks out overlapping runs, and atomically publishes private timestamped dumps. A failed dump cannot replace a completed backup. Completed dumps older than 14 days are pruned only after a successful new dump.
+
+Install the copied script and test it:
+
+```bash
+chmod 750 /opt/forma-studio/backup-postgres.sh
+bash /opt/forma-studio/backup-postgres.sh
+```
+
+The deploy script installs one idempotent user crontab entry. If you prefer a root-owned `/etc/cron.d/forma-postgres-backup`, it can contain this schedule (adjust `ubuntu` to the deploy user):
+
+```cron
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 2 * * * ubuntu /bin/bash /opt/forma-studio/backup-postgres.sh >> /opt/backups/backup.log 2>&1
+```
+
+Check that dumps appear and periodically restore one to a separate test database. Copy `/opt/backups` to OCI Object Storage or another host; local files alone cannot protect against VM loss. Off-host transfer requires storage credentials and monitoring. Images live in `api_media`; database dumps contain only their metadata. Back up that volume separately, preferably with uploads paused. R2 migration remains a separate task. Never run `docker compose down -v` in production.
+
+Before a schema change, take and verify a database backup. To roll back application images, set `IMAGE_TAG` in the private `.env` to the previous `main-<full-commit-sha>`, then run the full `pull` and `up` commands above with both Compose files. Verify the previous application supports the current schema. `docker compose pull` accepts service names, not image references. Database restores and migration downgrades require a separate maintenance procedure.
+
+## Resource limits
+
+Web/admin use non-root Next.js standalone runtime images. Every production container has log rotation and memory limits. Node heaps and PostgreSQL memory/connection settings are reduced for the small VM. The container ceilings together exceed 1 GB; these are limits, not reserved memory. Low traffic and 2 GB swap remain necessary, and swap is slower than RAM. Monitor `free -h` and `docker stats --no-stream`; increase VM memory if normal traffic causes swapping or out-of-memory restarts. Keep a previous image release for rollback and never prune production volumes.
+
+Reference documentation: [Docker on Ubuntu](https://docs.docker.com/engine/install/ubuntu/), [Compose service settings](https://docs.docker.com/reference/compose-file/services/), [Caddy request body limits](https://caddyserver.com/docs/caddyfile/directives/request_body).

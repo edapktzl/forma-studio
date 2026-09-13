@@ -90,7 +90,9 @@ async def detail(slug: str, language: str = Query("en", pattern="^(en|tr)$"), db
     record = await db.scalar(query().where(Project.slug == slug, Project.status == "published", Project.deleted_at.is_(None)))
     if not record:
         raise HTTPException(404, "Project not found.")
-    text = next(t for t in record.translations if t.language_code == language)
+    text = next((t for t in record.translations if t.language_code == language), None)
+    if not text:
+        raise HTTPException(404, "Translation unavailable.")
     return ProjectDetail(**to_item(record, language).model_dump(), **{f: getattr(text, f) for f in ("description", "challenge", "approach", "outcome")},
         images=[i.media.public_url for i in record.images if not i.media.deleted_at])
 

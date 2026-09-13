@@ -26,10 +26,11 @@ async def login(payload: LoginRequest, response: Response, db: AsyncSession = De
         raise HTTPException(status_code=401, detail="Invalid email or password")
     raw_refresh, refresh_hash = create_refresh_token()
     settings = get_settings()
-    db.add(AdminSession(user_id=user.id, refresh_token_hash=refresh_hash, expires_at=datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_days)))
+    session = AdminSession(user_id=user.id, refresh_token_hash=refresh_hash, expires_at=datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_days))
+    db.add(session)
     await db.commit()
     secure = settings.environment == "production"
-    response.set_cookie("access_token", create_access_token(user.id, user.role), httponly=True, secure=secure, samesite="lax", max_age=settings.access_token_minutes * 60)
+    response.set_cookie("access_token", create_access_token(user.id, user.role, session.id), httponly=True, secure=secure, samesite="lax", max_age=settings.access_token_minutes * 60)
     response.set_cookie("refresh_token", raw_refresh, httponly=True, secure=secure, samesite="lax", max_age=settings.refresh_token_days * 86400)
     response.set_cookie("csrf_token", secrets.token_urlsafe(32), httponly=False, secure=secure, samesite="lax", max_age=settings.refresh_token_days * 86400)
     return CurrentAdmin(id=user.id, email=user.email, full_name=user.full_name, role=user.role)
@@ -52,7 +53,7 @@ async def refresh(response: Response, refresh_token: str | None = Cookie(default
     await db.commit()
     settings = get_settings()
     secure = settings.environment == "production"
-    response.set_cookie("access_token", create_access_token(user.id, user.role), httponly=True, secure=secure, samesite="lax", max_age=settings.access_token_minutes * 60)
+    response.set_cookie("access_token", create_access_token(user.id, user.role, session.id), httponly=True, secure=secure, samesite="lax", max_age=settings.access_token_minutes * 60)
     response.set_cookie("refresh_token", new_refresh, httponly=True, secure=secure, samesite="lax", max_age=max(0, int((session.expires_at-now).total_seconds())))
     return CurrentAdmin(id=user.id, email=user.email, full_name=user.full_name, role=user.role)
 

@@ -1,12 +1,16 @@
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1').replace(/\/$/, '');
 let refreshPromise;
+let csrfPromise;
 export class ApiError extends Error {
   constructor(message, status) { super(message); this.status = status; }
 }
 async function csrf() {
-  const response = await fetch(API + '/auth/csrf', { credentials: 'include', cache: 'no-store' });
-  if (!response.ok) throw new ApiError('Could not establish a secure session. Please try again.', response.status);
-  return (await response.json()).csrf_token;
+  if (!csrfPromise) csrfPromise = (async () => {
+    const response = await fetch(API + '/auth/csrf', { credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(15000) });
+    if (!response.ok) throw new ApiError('Could not establish a secure session. Please try again.', response.status);
+    return (await response.json()).csrf_token;
+  })().finally(() => { csrfPromise = null; });
+  return csrfPromise;
 }
 async function renew() {
   if (!refreshPromise) refreshPromise = (async () => {
@@ -17,12 +21,12 @@ async function renew() {
   return refreshPromise;
 }
 export async function api(path, options = {}, retry = true) {
-  const method = options.method || 'GET';
+  const method = (options.method || 'GET').toUpperCase();
   const headers = { ...options.headers };
   let body = options.body;
   if (body && !(body instanceof FormData)) { headers['Content-Type'] = 'application/json'; body = JSON.stringify(body); }
   try {
-    if (method !== 'GET') headers['X-CSRF-Token'] = await csrf();
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) headers['X-CSRF-Token'] = await csrf();
     const response = await fetch(API + path, { ...options, method, body, headers, credentials: 'include', cache: 'no-store' });
     if (response.status === 401 && retry && !path.startsWith('/auth/login')) {
       if (await renew()) return api(path, options, false);
@@ -40,5 +44,9 @@ export async function api(path, options = {}, retry = true) {
   }
 }
 export function mediaUrl(value) {
-  return value ? new URL(value, API + '/').href : '';
+  if (!value) return '';
+  try {
+    const url = new URL(value, API + '/');
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  } catch { return ''; }
 }

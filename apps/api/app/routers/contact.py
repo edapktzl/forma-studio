@@ -26,6 +26,13 @@ async def create_contact_message(payload: ContactMessageCreate, db: AsyncSession
 async def list_messages(db: AsyncSession = Depends(get_db), _admin=Depends(require_admin)):
     return (await db.scalars(select(ContactMessage).order_by(ContactMessage.created_at.desc()))).all()
 
+@admin_router.get("/{message_id}", response_model=ContactMessageAdminItem)
+async def get_message(message_id: int, db: AsyncSession = Depends(get_db), _admin=Depends(require_admin)):
+    message = await db.get(ContactMessage, message_id)
+    if not message:
+        raise HTTPException(404, "Message not found.")
+    return message
+
 @admin_router.patch("/{message_id}/{status_name}", response_model=ContactMessageAdminItem)
 async def update_message_status(message_id: int, status_name: str, db: AsyncSession = Depends(get_db), _admin=Depends(require_admin)):
     if status_name == "archive": status_name = "archived"
