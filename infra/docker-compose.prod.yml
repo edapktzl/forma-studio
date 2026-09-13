@@ -42,7 +42,7 @@ services:
     pids_limit: 128
     environment:
       ENVIRONMENT: production
-      CORS_ORIGINS: https://www.edanurpektezel.com,https://admin.edanurpektezel.com
+      CORS_ORIGINS: https://www.edanurpektezel.com,https://forma-studio.edanurpektezel.com,https://admin.edanurpektezel.com
 
   worker:
     <<: *runtime
