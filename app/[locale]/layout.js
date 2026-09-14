@@ -1,6 +1,6 @@
 import '../globals.css';
-import '@fontsource-variable/manrope';
-import '@fontsource-variable/space-grotesk';
+import '@fontsource-variable/figtree';
+import '@fontsource/instrument-serif';
 import { sitePath } from '../../lib/site-path';
 import { notFound } from 'next/navigation';
 import SiteHeader from '../../components/site-header';

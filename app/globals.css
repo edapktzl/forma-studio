@@ -3,13 +3,13 @@
  --color-forest: #293f34;
  --color-paper: #f8f7f3;
  --color-sage: #dce5cd;
- --font-sans: 'Manrope', 'Segoe UI', Arial, sans-serif;
- --font-display: 'Space Grotesk', 'Manrope', 'Segoe UI', Arial, sans-serif;
+ --font-sans: 'Figtree', 'Segoe UI', Arial, sans-serif;
+ --font-display: 'Instrument Serif', Georgia, serif;
 }
 @layer base {
  * { box-sizing:border-box; }
  html { scroll-behavior:smooth; scroll-padding-top:110px; }
- body { @apply m-0 bg-paper text-forest antialiased; font-family:'Manrope','Segoe UI',Arial,sans-serif; font-size:15px; }
+ body { @apply m-0 bg-paper text-forest antialiased; font-family:'Figtree','Segoe UI',Arial,sans-serif; font-size:16px; }
  a { color:inherit; text-decoration:none; }
  button,input,select,textarea { font:inherit; }
  button { cursor:pointer; }
@@ -17,12 +17,12 @@
  :focus-visible { outline:2px solid #64865a; outline-offset:5px; }
  ::selection { background:#dce5cd; color:#293f34; }
  h1,h2,h3,p { margin:0; }
- h1,h2,h3 { font-family:var(--font-display); font-weight:450; }
+ h1,h2,h3 { font-family:var(--font-display); font-weight:400; }
  h1,h2 { white-space:pre-line; }
- h1 { font-size:clamp(44px,5.6vw,80px); line-height:1.04; letter-spacing:-3px; }
- h2 { font-size:clamp(32px,3.3vw,48px); line-height:1.08; letter-spacing:-1.6px; }
- h3 { font-size:23px; letter-spacing:-.45px; line-height:1.25; }
- p { line-height:1.7; }
+ h1 { font-size:clamp(48px,5.6vw,82px); line-height:1.02; letter-spacing:-1.8px; }
+ h2 { font-size:clamp(35px,3.4vw,54px); line-height:1.04; letter-spacing:-.8px; }
+ h3 { font-size:26px; letter-spacing:-.25px; line-height:1.15; }
+ p { line-height:1.72; }
 }
 @layer components {
  .shell { @apply mx-auto; width:calc(100% - 112px); max-width:1328px; }
@@ -299,6 +299,31 @@
 @media(max-width:767px) { .hero-intro { justify-self:stretch; width:100%; } }
 @media(prefers-reduced-motion:no-preference) { main>section:first-child{animation:arrive .55s ease both}@keyframes arrive{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}} }
 @media(prefers-reduced-motion:reduce) { html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important} }
+
+/* Typography refresh: editorial serif headlines with a clean, readable body face. */
+body { font-family:'Figtree','Segoe UI',Arial,sans-serif; font-feature-settings:'ss01' 1, 'cv11' 1; }
+h1,h2,h3,.hero-heading h1,.page-intro h1,.section-heading h2,.story-grid h2,.service-detail h2,.faq-section h2,.project-detail-heading h1,.project-narrative-list h2,.article-intro h1,.article-body h2 { font-family:'Instrument Serif',Georgia,serif; font-weight:400; }
+.brand,.desktop-nav,.mobile-nav,.button,.text-link,.eyebrow,.language-switch,.hero-image-caption,.hero-bottom,.project-filters,.project-year,.project-caption p,.project-caption>span,.article-meta,.footer-grid h3,.footer-grid nav,.footer-bottom,.form-label,.form-note,.project-facts dt,.project-hero-meta,.project-story-number,.portfolio-note { font-family:'Figtree','Segoe UI',Arial,sans-serif; }
+.brand { font-weight:700; letter-spacing:-2.3px; }
+.desktop-nav a { font-size:13px; letter-spacing:.01em; }
+.button { font-weight:600; letter-spacing:.01em; }
+.eyebrow { font-weight:700; letter-spacing:2.4px; }
+.hero-intro p,.section-description,.service-card p,.project-detail-summary,.project-narrative-list p,.article-card>p,.contact-info,.visit-note { font-size:14px; }
+.hero-heading h1 { letter-spacing:-2px; }
+.section-heading h2 { max-width:620px; }
+.service-card h3,.project-caption h3,.article-card h3 { letter-spacing:-.35px; }
+.service-card-bottom,.cta-link { font-family:'Figtree','Segoe UI',Arial,sans-serif; font-weight:600; }
+.testimonial blockquote { font-family:'Instrument Serif',Georgia,serif; font-weight:400; letter-spacing:-.25px; }
+.footer-kicker,.footer-description,.footer-note p { font-family:'Figtree','Segoe UI',Arial,sans-serif; }
+.project-detail-heading h1 { letter-spacing:-2.5px; }
+.project-lead { font-family:'Instrument Serif',Georgia,serif; }
+.project-narrative-list h2 { letter-spacing:-.7px; }
+@media(max-width:767px) {
+ h1 { letter-spacing:-1px; }
+ h2 { letter-spacing:-.35px; }
+ .hero-heading h1,.project-detail-heading h1 { letter-spacing:-1.5px; }
+ .service-card h3,.project-caption h3,.article-card h3 { font-size:27px; }
+}
 
 /* Refined editorial rhythm: keeps the original palette and mark while giving
    the intro, footer and service rows a quieter visual hierarchy. */
