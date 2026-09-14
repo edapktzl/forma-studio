@@ -66,7 +66,7 @@ Built with Next.js App Router, React, Tailwind CSS, and Lucide icons. The produc
 
 ## Demo limitations
 
-Forma is a fictional company. Team profiles, project stories, statistics, and testimonials are illustrative. Photographs are served from Unsplash and require an internet connection; they are not claimed as original studio work. System typography avoids external font requests.
+Forma is a fictional company. Team profiles, project stories, statistics, and testimonials are illustrative. Photographs are served from Unsplash and require an internet connection; they are not claimed as original studio work. Plus Jakarta Sans is bundled with both Next.js applications, so typography does not depend on a runtime font request.
 
 When the API is not configured, project/article pages and the contact form use safe static/demo fallbacks. With `NEXT_PUBLIC_API_URL` set, the contact form stores messages through FastAPI and public project/article lists read published records from the API; it never downloads a file. Replace the example company content and configure a real e-mail/storage provider before launching a public business site.
 
@@ -94,6 +94,8 @@ The VPS `/opt/forma-studio/.env` file contains infrastructure settings. `POSTGRE
 The admin panel includes a dashboard, bilingual project and article editors, testimonials, category management, an image library and a message inbox. Projects support gallery ordering and cover selection. Articles use a block editor for paragraphs, headings, quotes and lists. Publication checks require both languages and a cover for projects and articles. Public lists and detail routes read published API content when configured, including newly created slugs. Admin sessions use HttpOnly cookies, CSRF verification and refresh-token rotation.
 
 To add the prepared bilingual demo project without touching existing records, set `FORMA_ADMIN_EMAIL` and `FORMA_ADMIN_PASSWORD` and run `python scripts/seed-demo-project.py`. The script uploads three high-resolution Pexels photographs and publishes the project only when its slug is not already present. Set `FORMA_DEMO_VIDEO` to a local MP4 path if you also want to bind a hero video.
+
+To add the curated ten-project portfolio through the same admin API used by the workspace, set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`, then run `node scripts/seed-pexels-projects.mjs --dry-run` before `node scripts/seed-pexels-projects.mjs`. The seed is idempotent, keeps existing projects, uploads three high-resolution Pexels photographs per project, and publishes ten reserved `pexels-*` slugs. Use `--rollback` to soft-delete only those seeded projects; their media files remain available for recovery.
 
 The API uses FastAPI, async SQLAlchemy, PostgreSQL, and Alembic. Public routes are versioned under `/api/v1`; admin writes require authentication. Image uploads currently use the local media volume; the R2 adapter remains pending. Service content and general site settings do not yet have admin editors. Configure `RESEND_API_KEY`, `MAIL_FROM`, and `ADMIN_NOTIFICATION_EMAIL` to enable the notification worker. From `apps/api`, local API smoke tests run with `python -m pytest tests` after installing `requirements.txt`.
 

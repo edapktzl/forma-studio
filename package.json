@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
-    "start": "next start --hostname 0.0.0.0"
+    "start": "next start --hostname 0.0.0.0",
+    "seed:pexels": "node scripts/seed-pexels-projects.mjs"
   },
   "keywords": [],
   "author": "",
@@ -16,8 +17,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@fontsource-variable/figtree": "^5.3.0",
-    "@fontsource/instrument-serif": "^5.3.0",
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "lucide-react": "^1.42.0",
     "next": "^16.3.4",
     "react": "^19.2.8",
