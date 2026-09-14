@@ -325,6 +325,22 @@ h1,h2,h3,.hero-heading h1,.page-intro h1,.section-heading h2,.story-grid h2,.ser
  .service-card h3,.project-caption h3,.article-card h3 { font-size:27px; }
 }
 
+/* Gallery refinement: balanced image proportions and a tighter transition from the story. */
+.project-story { padding-bottom:68px; }
+.project-detail-gallery { margin-top:0; margin-bottom:88px; }
+.project-gallery-heading { padding-top:17px; padding-bottom:20px; }
+.project-gallery-grid { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:none; gap:16px; }
+.project-gallery-image,.project-gallery-image:first-child { grid-row:auto; aspect-ratio:1.38; background:#e9e9e1; }
+.project-gallery-image .picture { object-position:center; }
+.project-gallery-image::after { content:''; position:absolute; inset:0; border:1px solid #ffffff25; pointer-events:none; }
+.project-gallery-image { position:relative; }
+@media(max-width:767px) {
+ .project-story { padding-bottom:52px; }
+ .project-detail-gallery { margin-bottom:60px; }
+ .project-gallery-grid { grid-template-columns:1fr; gap:12px; }
+ .project-gallery-image,.project-gallery-image:first-child { aspect-ratio:1.25; }
+}
+
 /* Refined editorial rhythm: keeps the original palette and mark while giving
    the intro, footer and service rows a quieter visual hierarchy. */
 .studio-intro { grid-template-columns:minmax(190px,.72fr) minmax(0,1.48fr); gap:90px; padding-top:78px; padding-bottom:72px; }
