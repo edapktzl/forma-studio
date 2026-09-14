@@ -19,8 +19,8 @@ def upgrade() -> None:
         DO $$
         DECLARE
           residential_id integer;
-          project_id integer;
-          media_id integer;
+          demo_project_id integer;
+          demo_media_id integer;
           created_project boolean := FALSE;
         BEGIN
           SELECT id INTO residential_id
@@ -40,7 +40,7 @@ def upgrade() -> None:
             created_project := TRUE;
           END IF;
 
-          SELECT id INTO project_id FROM projects WHERE slug = 'cedar-courtyard-demo';
+          SELECT id INTO demo_project_id FROM projects WHERE slug = 'cedar-courtyard-demo';
 
           -- A real project with this reserved slug always wins. Never attach
           -- demo translations or media to an administrator's existing row.
@@ -51,13 +51,13 @@ def upgrade() -> None:
           INSERT INTO project_translations
             (project_id, language_code, title, concept, short_description, description, challenge, approach, outcome)
           VALUES
-            (project_id, 'en', 'Cedar Courtyard', 'Residential · Architecture and interiors',
+            (demo_project_id, 'en', 'Cedar Courtyard', 'Residential · Architecture and interiors',
              'A calm courtyard house shaped by shade, stone and local olive trees.',
              'Cedar Courtyard organizes daily life around a planted central garden, balancing privacy with long views across the landscape.',
              'Create a generous home on a compact coastal plot without losing the feeling of openness.',
              'Deep reveals, tactile stone and a restrained material palette make the courtyard feel cool and connected.',
              'A durable family home with soft transitions between inside and outside.'),
-            (project_id, 'tr', 'Sedir Avlu', 'Konut · Mimari ve iç mekân',
+            (demo_project_id, 'tr', 'Sedir Avlu', 'Konut · Mimari ve iç mekân',
              'Gölge, taş ve yerel zeytin ağaçlarıyla şekillenen sakin bir avlu evi.',
              'Sedir Avlu, günlük yaşamı bitkili bir iç bahçe etrafında kurgular; mahremiyeti manzaraya açılan uzun bakışlarla dengeler.',
              'Kıyıdaki sınırlı parselde açıklık hissini koruyan cömert bir ev tasarlamak.',
@@ -72,7 +72,7 @@ def upgrade() -> None:
             ('external/pexels-35173051.jpg', 'https://images.pexels.com/photos/35173051/pexels-photo-35173051.jpeg?auto=compress&cs=tinysrgb&w=2400&q=90', 'cedar-courtyard-pexels-03.jpg', 'image/jpeg', 1051881, 'Cedar Courtyard light-filled interior')
           ON CONFLICT (storage_key) DO NOTHING;
 
-          FOR media_id IN
+          FOR demo_media_id IN
             SELECT id FROM media_files WHERE storage_key IN (
               'external/pexels-12700453.jpg',
               'external/pexels-24285883.jpg',
@@ -80,16 +80,16 @@ def upgrade() -> None:
             )
           LOOP
             INSERT INTO project_images (project_id, media_id, alt_text, sort_order, is_cover)
-            SELECT project_id, media_id, 'Cedar Courtyard project photograph',
-                   CASE media_id
+            SELECT demo_project_id, demo_media_id, 'Cedar Courtyard project photograph',
+                   CASE demo_media_id
                      WHEN (SELECT id FROM media_files WHERE storage_key = 'external/pexels-12700453.jpg') THEN 0
                      WHEN (SELECT id FROM media_files WHERE storage_key = 'external/pexels-24285883.jpg') THEN 1
                      ELSE 2
                    END,
-                   media_id = (SELECT id FROM media_files WHERE storage_key = 'external/pexels-12700453.jpg')
+                   demo_media_id = (SELECT id FROM media_files WHERE storage_key = 'external/pexels-12700453.jpg')
             WHERE NOT EXISTS (
               SELECT 1 FROM project_images existing
-              WHERE existing.project_id = project_id AND existing.media_id = media_id
+              WHERE existing.project_id = demo_project_id AND existing.media_id = demo_media_id
             );
           END LOOP;
         END $$;
