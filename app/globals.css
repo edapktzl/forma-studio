@@ -830,3 +830,22 @@ h1,h2,h3,.hero-heading h1,.page-intro h1,.section-heading h2,.story-grid h2,.ser
  .home-modern .editorial-article-grid .article-card:not(:first-child) .article-meta { margin:0 0 10px; }
  .content-fallback-note { align-items:flex-start; flex-wrap:wrap; }
 }
+
+/* Studio statement: an editorial image-and-text panel with a clearer visual order. */
+.home-modern-statement { position:relative; grid-template-columns:minmax(260px,.82fr) minmax(0,1.18fr); grid-template-areas:'image copy'; align-items:stretch; gap:clamp(34px,6vw,96px); padding:clamp(68px,9vw,126px) clamp(24px,4vw,68px); background:#eef1e8; }
+.home-modern-statement-index { position:absolute; z-index:3; top:28px; left:clamp(24px,4vw,68px); right:clamp(24px,4vw,68px); display:flex; flex-direction:row; align-items:center; justify-content:space-between; min-height:0; border:0; padding:0; }
+.home-modern-statement-index .eyebrow { margin:0; color:#536457; }
+.home-modern-statement-index .eyebrow>span { background:#7d936a; }
+.home-modern-statement-index>span { color:#536457; font:600 10px/1 'Plus Jakarta Sans',sans-serif; letter-spacing:.2em; }
+.home-modern-statement-copy { grid-area:copy; align-self:center; padding:clamp(20px,3vw,48px) 0; }
+.home-modern-statement-kicker { display:block; margin-bottom:18px; color:#7c8b7d; font:600 9px/1.2 'Plus Jakarta Sans',sans-serif; letter-spacing:.18em; }
+.home-modern-statement-copy h2 { max-width:620px; color:#293f34; font-family:'Plus Jakarta Sans',sans-serif; font-size:clamp(39px,5.2vw,78px); font-weight:600; line-height:.98; letter-spacing:-.075em; }
+.home-modern-statement-copy>p { max-width:440px; margin:25px 0 24px; color:#536457; font-size:14px; font-weight:500; line-height:1.7; }
+.home-modern-statement-image { grid-area:image; position:relative; align-self:stretch; min-height:clamp(390px,42vw,590px); height:auto; overflow:visible; background:#dfe7da; }
+.home-modern-statement-image::before { content:''; position:absolute; inset:14px -14px -14px 14px; border:1px solid #c5d1c1; pointer-events:none; }
+.home-modern-statement-image .picture { position:relative; z-index:1; width:100%; height:100%; object-fit:cover; transition:transform .7s cubic-bezier(.2,.7,.2,1),filter .4s ease; }
+.home-modern-statement-image:hover .picture { transform:translate(-5px,-5px) scale(1.015); filter:saturate(1.05); }
+.home-modern-statement-image-label { position:absolute; z-index:2; right:16px; bottom:16px; padding:8px 10px; background:#293f34e6; color:#f8f7f3; font:600 9px/1 'Plus Jakarta Sans',sans-serif; letter-spacing:.15em; }
+.home-modern-statement-image-corner { position:absolute; z-index:2; left:-10px; bottom:-10px; width:24px; height:24px; border-left:1px solid #879982; border-bottom:1px solid #879982; }
+@media(max-width:900px) { .home-modern-statement { gap:32px; padding-right:28px; padding-left:28px; } .home-modern-statement-index { left:28px; right:28px; } }
+@media(max-width:767px) { .home-modern-statement { grid-template-columns:1fr; grid-template-areas:'image' 'copy'; gap:30px; padding:68px 20px 56px; } .home-modern-statement-index { top:22px; left:20px; right:20px; } .home-modern-statement-index>span { font-size:9px; } .home-modern-statement-image { min-height:0; aspect-ratio:4 / 5; } .home-modern-statement-image::before { inset:10px -10px -10px 10px; } .home-modern-statement-copy { padding:0; } .home-modern-statement-kicker { margin-bottom:14px; } .home-modern-statement-copy h2 { max-width:480px; font-size:clamp(37px,11vw,57px); line-height:.99; } .home-modern-statement-copy>p { margin:19px 0 21px; font-size:13px; } }
