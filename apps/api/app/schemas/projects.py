@@ -28,6 +28,7 @@ class ProjectListItem(BaseModel):
     is_featured: bool
     category: str | None = None
     image: str | None = None
+    video_url: str | None = None
 
 
 class ProjectListResponse(BaseModel):
@@ -54,6 +55,7 @@ class ProjectCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
     slug: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$", max_length=140)
     category_id: int = Field(gt=0)
+    video_media_id: int | None = Field(default=None, gt=0)
     location: str = Field(min_length=2, max_length=180)
     area_sqm: int | None = Field(default=None, ge=0)
     construction_year: int | None = Field(default=None, ge=1800, le=2200)

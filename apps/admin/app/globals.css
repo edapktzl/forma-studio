@@ -6,3 +6,10 @@
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 :root{}
 .sidebar-actions{display:flex;align-items:center;gap:10px;margin-top:14px}.language-switcher select{width:auto;background:transparent;border:1px solid rgba(255,255,255,.35);color:inherit;border-radius:4px;padding:7px 5px;font-size:11px;font-weight:700;letter-spacing:.08em}.language-switcher option{color:#1d2d26;background:#f5f3ed}
+@media(max-width:800px){.sidebar{overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}.sidebar nav,.sidebar-bottom{flex-shrink:0}.sidebar-bottom{margin-top:32px}}
+
+body { font-family:'Manrope', 'Segoe UI', Arial, sans-serif; }
+h1, h2, h3 { font-family:'Space Grotesk', 'Segoe UI', Arial, sans-serif; font-weight:450; letter-spacing:-.035em; }
+.wordmark { font-family:Georgia, 'Times New Roman', serif; }
+.media-tile video { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:#1f2d24; }
+.library-card video { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:#1f2d24; }

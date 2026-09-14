@@ -21,6 +21,7 @@ export default function Shell({children}) {
   },[router,attempt]);
   useEffect(() => { setOpen(false); },[pathname]);
   useEffect(() => { const escape = e => { if(e.key==='Escape') setOpen(false); }; window.addEventListener('keydown',escape); return()=>window.removeEventListener('keydown',escape); },[]);
+  useEffect(() => { if(!open) return undefined; const previous = document.body.style.overflow; document.body.style.overflow='hidden'; return()=>{document.body.style.overflow=previous;}; },[open]);
   async function logout(){ try { await api('/auth/logout',{method:'POST'}); router.replace('/login'); } catch(e){setError(e.message);} }
   if(!user) return <main className="session-screen">{error ? <><h1>{t('session')}</h1><p role="alert">{error}</p><button onClick={()=>{setError('');setAttempt(n=>n+1);}}>{t('retry')}</button><Link href="/login">{t('back')}</Link></> : <p role="status">{t('workspace')}</p>}</main>;
   return <div className="admin-shell">

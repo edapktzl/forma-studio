@@ -29,6 +29,7 @@ class Project(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     slug: Mapped[str] = mapped_column(String(140), unique=True, index=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("project_categories.id"))
+    video_media_id: Mapped[int | None] = mapped_column(ForeignKey("media_files.id", ondelete="SET NULL"), nullable=True)
     location: Mapped[str] = mapped_column(String(180))
     area_sqm: Mapped[int | None] = mapped_column(Integer)
     construction_year: Mapped[int | None] = mapped_column(Integer)
@@ -36,6 +37,7 @@ class Project(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(20), default="draft", index=True)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     category: Mapped[ProjectCategory] = relationship(back_populates="projects")
+    video_media: Mapped["MediaFile | None"] = relationship(foreign_keys=[video_media_id])
     translations: Mapped[list["ProjectTranslation"]] = relationship(cascade="all, delete-orphan")
     images: Mapped[list["ProjectImage"]] = relationship(cascade="all, delete-orphan", order_by="ProjectImage.sort_order")
 

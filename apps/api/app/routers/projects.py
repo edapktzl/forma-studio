@@ -15,7 +15,7 @@ category_router = APIRouter(prefix="/project-categories", tags=["project-categor
 FIELDS = ("title", "concept", "short_description", "description", "challenge", "approach", "outcome")
 
 def query():
-    return select(Project).options(selectinload(Project.translations), selectinload(Project.category), selectinload(Project.images).selectinload(ProjectImage.media))
+    return select(Project).options(selectinload(Project.translations), selectinload(Project.category), selectinload(Project.video_media), selectinload(Project.images).selectinload(ProjectImage.media))
 
 async def find(db, identifier):
     record = await db.scalar(query().where(Project.id == identifier, Project.deleted_at.is_(None)))
@@ -25,9 +25,10 @@ async def find(db, identifier):
 
 def admin_item(record):
     return {
-        **{key: getattr(record, key) for key in ("id", "slug", "category_id", "location", "area_sqm", "construction_year", "is_featured", "status")},
+        **{key: getattr(record, key) for key in ("id", "slug", "category_id", "location", "area_sqm", "construction_year", "is_featured", "status", "video_media_id")},
         "translations": translations_dict(record, FIELDS),
         "images": [{"id": i.id, "media_id": i.media_id, "alt_text": i.alt_text or "", "is_cover": i.is_cover, "url": i.media.public_url, "sort_order": i.sort_order} for i in record.images],
+        "video": record.video_media.public_url if record.video_media and not record.video_media.deleted_at else None,
     }
 
 def to_item(record, language):
@@ -37,7 +38,8 @@ def to_item(record, language):
     cover = next((i for i in record.images if i.is_cover and i.media and not i.media.deleted_at), None)
     return ProjectListItem(id=record.id, slug=record.slug, title=text.title, concept=text.concept, short_description=text.short_description,
         location=record.location, area_sqm=record.area_sqm, construction_year=record.construction_year, is_featured=record.is_featured,
-        category=record.category.slug, image=cover.media.public_url if cover else None)
+        category=record.category.slug, image=cover.media.public_url if cover else None,
+        video_url=record.video_media.public_url if record.video_media and not record.video_media.deleted_at else None)
 
 def ensure_publishable(record):
     bilingual({t.language_code: t for t in record.translations})
@@ -62,12 +64,16 @@ async def apply_payload(db, record, payload):
     if sum(i.is_cover for i in payload.images) > 1:
         raise HTTPException(422, "Select exactly one cover image.")
     gallery = []
+    video = await valid_media(db, payload.video_media_id)
+    if video and video.mime_type != "video/mp4":
+        raise HTTPException(422, "Hero video must be an MP4 file.")
     for index, image in enumerate(payload.images):
         media = await valid_media(db, image.media_id)
         gallery.append(ProjectImage(media=media, media_id=image.media_id, alt_text=image.alt_text, sort_order=index, is_cover=image.is_cover))
     for key in ("slug", "category_id", "location", "area_sqm", "construction_year", "is_featured", "status"):
         setattr(record, key, getattr(payload, key))
     record.category = category
+    record.video_media = video
     record.images = gallery
     update_translations(record, payload.translations, ProjectTranslation)
     if record.status == "published":

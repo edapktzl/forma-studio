@@ -52,6 +52,11 @@ def png():
         return struct.pack("!I", len(data)) + name + data + struct.pack("!I", zlib.crc32(name + data))
     return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack("!2I5B",32,32,8,2,0,0,0)) + chunk(b"IDAT",zlib.compress((b"\0"+bytes([120,145,102])*32)*32)) + chunk(b"IEND",b"")
 
+def mp4():
+    # Minimal ISO-BMFF header used only to verify the upload type gate. A real
+    # browser video should be uploaded from the admin media library.
+    return b"\x00\x00\x00\x18ftypisom\x00\x00\x02\x00" + b"local-check"
+
 prefix = "workspace-check-" + secrets.token_hex(4)
 credentials = json.loads((ROOT / ".env.admin.local").read_text())
 try:
@@ -76,12 +81,13 @@ try:
         category = create("project_categories","/admin/project-categories",{"slug":prefix,"translations":{"en":{"name":"Test category"},"tr":{"name":"Deneme kategorisi"}}})
         blog_category = create("blog_categories","/admin/blog-categories",{"slug":prefix,"translations":{"en":{"name":"Test journal"},"tr":{"name":"Deneme yazıları"}}})
         media = create("media_files","/admin/media",files={"file":("check.png",png(),"image/png")})
+        video_media = create("media_files","/admin/media",files={"file":("check.mp4",mp4(),"video/mp4")})
         assert client.post("/admin/media",files={"file":("bad.png",b"not an image","image/png")}).status_code==422
         assert client.post("/admin/media",files={"file":("bad.php",png(),"image/png")}).status_code==415
         request("PATCH","/admin/media/"+str(media["id"]),json={"alt_text":"A local test photograph"})
         def tr(title):
             return {"title":title,"concept":"Architecture","short_description":"A bilingual project.","description":"A complete project story."}
-        payload={"slug":prefix,"category_id":category["id"],"location":"Istanbul","area_sqm":120,"construction_year":2025,"translations":{"en":tr("Test project"),"tr":tr("Deneme projesi")},"status":"draft"}
+        payload={"slug":prefix,"category_id":category["id"],"location":"Istanbul","area_sqm":120,"construction_year":2025,"translations":{"en":tr("Test project"),"tr":tr("Deneme projesi")},"status":"draft","video_media_id":video_media["id"]}
         project=create("projects","/admin/projects",payload)
         assert client.get("/projects/"+prefix).status_code==404
         assert client.patch("/admin/projects/"+str(project["id"])+"/publish").status_code==422
@@ -94,6 +100,7 @@ try:
             assert page.status_code == 200 and title in page.text, ("public project page", language, page.status_code)
         assert client.post("/admin/projects",json=payload).status_code==409
         assert client.delete("/admin/media/"+str(media["id"])).status_code==409
+        assert client.delete("/admin/media/"+str(video_media["id"])).status_code==409
         bad=dict(payload,translations={"en":tr("English only")})
         assert client.put("/admin/projects/"+str(project["id"]),json=bad).status_code==422
 

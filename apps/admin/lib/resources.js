@@ -14,6 +14,14 @@ export function emptyRecord(config){
  if(config.statuses)item.status='draft';
  if(config.gallery)item.images=[];
  if(config.imageKey)item[config.imageKey]=null;
+ if(config.videoKey)item[config.videoKey]=null;
  return item;
 }
 export function titleOf(item){return item.translations?.en?.title||item.translations?.en?.name||item.client_name||item.slug;}
+
+// Hero videos are optional project media. Keeping this metadata beside the
+// resource config lets the shared editor handle projects without changing the
+// image fields used by articles and testimonials.
+resources.projects.videoKey='video_media_id';
+resources.projects.videoLabel='Hero video';
+resources.projects.videoLabelTr='Hero videosu';

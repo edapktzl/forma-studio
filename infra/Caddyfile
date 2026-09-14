@@ -34,7 +34,9 @@ api.edanurpektezel.com {
   import security_headers
   header X-Robots-Tag "noindex, nofollow"
   request_body {
-    max_size 12MB
+    # Image uploads are capped at 10 MB and hero MP4 uploads at 60 MB by the
+    # API. Leave a small multipart overhead margin at the proxy boundary.
+    max_size 70MB
   }
   reverse_proxy api:8000
 }

@@ -34,6 +34,7 @@ npm start
 - Responsive navigation with an accessible hamburger menu, keyboard focus handling, and Escape-to-close.
 - Project category filters, expandable service FAQs, and a validated contact form with name, email, phone, subject, and message fields.
 - Server-rendered language attributes and page metadata, static generation, reduced-motion support, and descriptive image alternatives.
+- The homepage hero rotates featured projects and can play an optional muted MP4 selected from the admin media library. Uploaded photographs keep their original encoded bytes unless orientation correction is required.
 
 ## Routes
 
@@ -91,6 +92,8 @@ Once the API is running, run `python scripts/bootstrap-local-admin.py` to create
 The VPS `/opt/forma-studio/.env` file contains infrastructure settings. `POSTGRES_PASSWORD` is only the PostgreSQL database password, `JWT_SECRET` signs admin sessions, `RESEND_API_KEY` is the mail provider API key, `MAIL_FROM` is the verified sender address, and `ADMIN_NOTIFICATION_EMAIL` is the address that receives contact notifications. These values are one per line as `KEY=value`; do not include angle brackets or quotes unless the value itself requires them. Keep this file private and set permissions to `chmod 600 /opt/forma-studio/.env`.
 
 The admin panel includes a dashboard, bilingual project and article editors, testimonials, category management, an image library and a message inbox. Projects support gallery ordering and cover selection. Articles use a block editor for paragraphs, headings, quotes and lists. Publication checks require both languages and a cover for projects and articles. Public lists and detail routes read published API content when configured, including newly created slugs. Admin sessions use HttpOnly cookies, CSRF verification and refresh-token rotation.
+
+To add the prepared bilingual demo project without touching existing records, set `FORMA_ADMIN_EMAIL` and `FORMA_ADMIN_PASSWORD` and run `python scripts/seed-demo-project.py`. The script uploads three high-resolution Unsplash photographs and publishes the project only when its slug is not already present. Set `FORMA_DEMO_VIDEO` to a local MP4 path if you also want to bind a hero video.
 
 The API uses FastAPI, async SQLAlchemy, PostgreSQL, and Alembic. Public routes are versioned under `/api/v1`; admin writes require authentication. Image uploads currently use the local media volume; the R2 adapter remains pending. Service content and general site settings do not yet have admin editors. Configure `RESEND_API_KEY`, `MAIL_FROM`, and `ADMIN_NOTIFICATION_EMAIL` to enable the notification worker. From `apps/api`, local API smoke tests run with `python -m pytest tests` after installing `requirements.txt`.
 

@@ -11,11 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..config import get_settings
 from ..database import get_db
 from ..dependencies import require_admin
-from ..models import MediaFile, ProjectImage, Article, Testimonial
+from ..models import MediaFile, Project, ProjectImage, Article, Testimonial
 from ..services.content import valid_media
 
 router = APIRouter(prefix="/admin/media", tags=["admin-media"])
-MAX_BYTES = 10 * 1024 * 1024
+IMAGE_MAX_BYTES = 10 * 1024 * 1024
+VIDEO_MAX_BYTES = 60 * 1024 * 1024
 Image.MAX_IMAGE_PIXELS = 20_000_000
 FORMATS = {"JPEG":("image/jpeg",".jpg"), "PNG":("image/png",".png"), "WEBP":("image/webp",".webp")}
 
@@ -51,6 +52,15 @@ def decode_image(data, filename, mime):
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError, Image.DecompressionBombWarning):
         raise HTTPException(422, "Invalid image, or image dimensions exceed the 20 megapixel limit.")
 
+def decode_video(data, filename, mime):
+    if Path(filename).suffix.lower() != ".mp4" or mime != "video/mp4":
+        raise HTTPException(415, "Use an MP4 video with a matching content type.")
+    # MP4 files contain an `ftyp` box near the beginning. This prevents a
+    # renamed arbitrary file from being published as a browser media asset.
+    if b"ftyp" not in data[:64]:
+        raise HTTPException(415, "The uploaded file is not a valid MP4 video.")
+    return data, (mime, ".mp4")
+
 def item(media):
     return {key:getattr(media,key) for key in ("id", "public_url", "file_name", "mime_type", "file_size", "alt_text", "created_at")}
 
@@ -60,11 +70,23 @@ async def listing(db:AsyncSession=Depends(get_db), admin=Depends(require_admin))
 
 @router.post("", status_code=201)
 async def upload(file:UploadFile=File(...), db:AsyncSession=Depends(get_db), admin=Depends(require_admin)):
-    data = await file.read(MAX_BYTES+1)
+    is_video = file.content_type == "video/mp4" or Path(file.filename or "").suffix.lower() == ".mp4"
+    max_bytes = VIDEO_MAX_BYTES if is_video else IMAGE_MAX_BYTES
+    data = await file.read(max_bytes+1)
     await file.close()
-    if len(data)>MAX_BYTES: raise HTTPException(413, "Image must be 10 MB or smaller.")
-    data, (mime, suffix) = decode_image(data, file.filename or "", file.content_type)
-    if len(data)>MAX_BYTES: raise HTTPException(413, "Processed image must be 10 MB or smaller.")
+    if len(data)>max_bytes:
+        raise HTTPException(413, "Video must be 60 MB or smaller." if is_video else "Image must be 10 MB or smaller.")
+    if is_video:
+        data, (mime, suffix) = decode_video(data, file.filename or "", file.content_type)
+    else:
+        data, (mime, suffix) = decode_image(data, file.filename or "", file.content_type)
+    if len(data) > max_bytes:
+        raise HTTPException(
+            413,
+            "Video must be 60 MB or smaller."
+            if is_video
+            else "Processed image must be 10 MB or smaller.",
+        )
     key = f"{uuid4().hex}{suffix}"
     root = Path(get_settings().media_storage_path)
     root.mkdir(parents=True, exist_ok=True)
@@ -92,9 +114,9 @@ async def update(identifier:int, payload:MediaUpdate, db:AsyncSession=Depends(ge
 @router.delete("/{identifier}", status_code=204)
 async def delete(identifier:int, db:AsyncSession=Depends(get_db), admin=Depends(require_admin)):
     media = await valid_media(db, identifier)
-    for model, column in ((ProjectImage,ProjectImage.media_id),(Article,Article.cover_media_id),(Testimonial,Testimonial.avatar_media_id)):
-        if await db.scalar(select(model.id).where(column==identifier).limit(1)):
-            raise HTTPException(409, "This image is still used by content. Remove its references first.")
+    for model, column in ((Project,Project.video_media_id),(ProjectImage,ProjectImage.media_id),(Article,Article.cover_media_id),(Testimonial,Testimonial.avatar_media_id)):
+        if await db.scalar(select(model.id).where(column == identifier).limit(1)):
+            raise HTTPException(409, "This media file is still used by content. Remove its references first.")
     media.deleted_at = datetime.now(timezone.utc)
     await db.commit()
     # Keep the file for recovery; deleted media is no longer selectable or publishable.
