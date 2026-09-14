@@ -6,7 +6,7 @@ import { copy, projects } from '../../../../lib/content';
 import { Eyebrow, TextLink, Picture, ProjectCard, CallToAction } from '../../../../components/ui';
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }) { if(isLiveContent){ const {locale,slug}=await params; const record=await getLiveDetail('projects',locale,slug); return record?{title:record.title+' | Forma Studio',description:record.short_description||record.excerpt}:{}; }  const { locale, slug } = await params; const p = projects.find(p=>p.slug===slug)?.[locale]; return p ? {title:`${p.title} | Forma Studio`, description:p.intro, alternates:{languages:{en:sitePath(`/en/projects/${slug}/`),tr:sitePath(`/tr/projects/${slug}/`)}}} : {}; }
+export async function generateMetadata({ params }) { const { locale, slug } = await params; if (isLiveContent) { const record = await getLiveDetail('projects', locale, slug); if (record) return { title: `${record.title} | Forma Studio`, description: record.short_description || record.excerpt }; } const p = projects.find((item) => item.slug === slug)?.[locale]; return p ? { title: `${p.title} | Forma Studio`, description: p.intro, alternates: { languages: { en: sitePath(`/en/projects/${slug}/`), tr: sitePath(`/tr/projects/${slug}/`) } } } : {}; }
 export default async function Project({ params }) { if(isLiveContent){const {locale,slug}=await params;return <LiveProject locale={locale} slug={slug}/>;}
  const { locale, slug } = await params; const index = projects.findIndex(p=>p.slug===slug); if(index<0) notFound(); const project=projects[index]; const p=project[locale]; const c=copy[locale].projects;
  const stories=[[c.challenge,p.challenge],[c.approach,p.approach],[c.outcome,p.outcome]];

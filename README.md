@@ -17,7 +17,7 @@ Open http://localhost:3000 (opens `/en/`). Turkish content starts at `/tr/`. If 
 
 The previous GitHub Pages site is a historical static preview. The current application requires a Next.js server and FastAPI; it cannot be published as a static Pages export.
 
-`.github/workflows/ci.yml` checks both frontend builds and API tests on pushes and pull requests. It does not deploy to an external server. Use the Docker setup below for the dynamic application.
+`.github/workflows/ci.yml` checks both frontend builds and API tests on pull requests and pushes. A successful push to `main` also builds the three production images, publishes them to GHCR, and deploys the selected image to the OCI server through the verified SSH step. Pull requests run validation only. Use the Docker setup below when running the dynamic application locally.
 
 To build and run the production version:
 
@@ -33,7 +33,7 @@ npm start
 - Language switching preserves the current page, including project and article details.
 - Responsive navigation with an accessible hamburger menu, keyboard focus handling, and Escape-to-close.
 - Project category filters, expandable service FAQs, and a validated contact form with name, email, phone, subject, and message fields.
-- Server-rendered language attributes and page metadata, static generation, reduced-motion support, and descriptive image alternatives.
+- Server-rendered language attributes and page metadata, API-driven content with safe static fallbacks, reduced-motion support, and descriptive image alternatives.
 - The homepage hero rotates featured projects and can play an optional muted MP4 selected from the admin media library. Uploaded photographs keep their original encoded bytes unless orientation correction is required.
 
 ## Routes

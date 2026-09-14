@@ -1,4 +1,4 @@
-name: Validate applications
+name: Validate and deploy applications
 on:
   push:
     branches: [main]
@@ -44,6 +44,10 @@ jobs:
     needs: [frontend, api]
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      # GHCR images are the deployable artifacts; Buildx's separate .dockerbuild
+      # records only add noise and storage usage to the Actions artifact list.
+      DOCKER_BUILD_RECORD_UPLOAD: false
     concurrency:
       group: forma-production
       cancel-in-progress: false
