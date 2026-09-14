@@ -849,3 +849,60 @@ h1,h2,h3,.hero-heading h1,.page-intro h1,.section-heading h2,.story-grid h2,.ser
 .home-modern-statement-image-corner { position:absolute; z-index:2; left:-10px; bottom:-10px; width:24px; height:24px; border-left:1px solid #879982; border-bottom:1px solid #879982; }
 @media(max-width:900px) { .home-modern-statement { gap:32px; padding-right:28px; padding-left:28px; } .home-modern-statement-index { left:28px; right:28px; } }
 @media(max-width:767px) { .home-modern-statement { grid-template-columns:1fr; grid-template-areas:'image' 'copy'; gap:30px; padding:68px 20px 56px; } .home-modern-statement-index { top:22px; left:20px; right:20px; } .home-modern-statement-index>span { font-size:9px; } .home-modern-statement-image { min-height:0; aspect-ratio:4 / 5; } .home-modern-statement-image::before { inset:10px -10px -10px 10px; } .home-modern-statement-copy { padding:0; } .home-modern-statement-kicker { margin-bottom:14px; } .home-modern-statement-copy h2 { max-width:480px; font-size:clamp(37px,11vw,57px); line-height:.99; } .home-modern-statement-copy>p { margin:19px 0 21px; font-size:13px; } }
+/* Home polish: calmer testimonial scale and a more refined services accordion. */
+.home-modern-testimonial { padding:clamp(78px,10vw,136px) 0; background:#f8f7f3; border-top:1px solid #e4e7dd; border-bottom:1px solid #e4e7dd; }
+.home-modern-testimonial-grid { grid-template-columns:minmax(260px,.62fr) minmax(0,1.38fr); align-items:center; gap:clamp(42px,8vw,120px); }
+.home-modern-testimonial-image { position:relative; height:clamp(280px,31vw,440px); overflow:visible; }
+.home-modern-testimonial-image::after { content:''; position:absolute; z-index:0; inset:12px -12px -12px 12px; border:1px solid #d4dccd; pointer-events:none; }
+.home-modern-testimonial-image .picture { position:relative; z-index:1; width:100%; height:100%; object-fit:cover; }
+.home-modern-testimonial-copy { max-width:680px; padding:0; }
+.home-modern-testimonial-copy .quote-symbol { display:block; margin-bottom:14px; color:#a8b89e; font:500 70px/.52 'Plus Jakarta Sans','Segoe UI',Arial,sans-serif; }
+.home-modern-testimonial-copy blockquote { max-width:680px; margin:0 0 27px; font:600 clamp(28px,3.2vw,48px)/1.08 'Plus Jakarta Sans','Segoe UI',Arial,sans-serif; letter-spacing:-.055em; }
+.home-modern-testimonial-copy>div:last-child { display:flex; align-items:baseline; gap:14px; border-top:1px solid #d4dccd; padding-top:15px; font:600 10px/1.4 'Plus Jakarta Sans',sans-serif; letter-spacing:.1em; text-transform:uppercase; }
+.home-modern-testimonial-copy>div:last-child span { color:#84927e; font-weight:500; }
+.home-modern-services { padding:clamp(82px,10vw,140px) 0; }
+.home-modern-services .shell { grid-template-columns:minmax(210px,.62fr) minmax(0,1.38fr); gap:clamp(42px,8vw,120px); }
+.home-modern-services-intro h2 { max-width:340px; font-size:clamp(38px,4.2vw,62px); line-height:.96; }
+.home-modern-services-intro>p { max-width:225px; margin-top:20px; color:#657365; font-size:12px; line-height:1.65; }
+.home-modern-service-list { border-top:1px solid #cfd8c8; }
+.home-modern-service summary { min-height:82px; grid-template-columns:34px 24px minmax(0,1fr) 22px; gap:14px; padding:0 4px; transition:background .25s ease,padding .25s ease; }
+.home-modern-service summary:hover { background:#e5ebdf; padding-right:10px; padding-left:10px; }
+.home-modern-service-title { gap:15px; }
+.home-modern-service-title b { font-size:clamp(20px,2vw,30px); font-weight:500; letter-spacing:-.045em; }
+.home-modern-service-title em { color:#7c897a; font-size:9px; letter-spacing:.1em; }
+.home-modern-service-plus { width:19px; height:19px; }
+.home-modern-service>p { max-width:570px; margin:0 0 20px 72px; color:#68786a; font-size:12px; line-height:1.65; white-space:normal; }
+.home-modern-service[open] { background:#e9eee5; }
+.home-modern-service[open] summary { padding-right:10px; padding-left:10px; }
+@media(max-width:767px) {
+ .home-modern-testimonial { padding:72px 0; }
+ .home-modern-testimonial-grid { grid-template-columns:1fr; gap:30px; }
+ .home-modern-testimonial-image { height:280px; margin-right:10px; }
+ .home-modern-testimonial-image::after { inset:10px -10px -10px 10px; }
+ .home-modern-testimonial-copy .quote-symbol { margin-bottom:10px; font-size:56px; }
+ .home-modern-testimonial-copy blockquote { margin-bottom:23px; font-size:clamp(25px,7.7vw,36px); line-height:1.1; }
+ .home-modern-testimonial-copy>div:last-child { align-items:flex-start; flex-direction:column; gap:4px; font-size:9px; }
+ .home-modern-services .shell { display:block; }
+ .home-modern-services-intro { margin-bottom:35px; }
+ .home-modern-services-intro h2 { max-width:300px; font-size:clamp(38px,12vw,58px); }
+ .home-modern-services-intro>p { max-width:280px; }
+ .home-modern-service summary { min-height:72px; grid-template-columns:28px 20px minmax(0,1fr) 20px; gap:10px; padding:0 2px; }
+ .home-modern-service summary:hover,.home-modern-service[open] summary { padding-right:7px; padding-left:7px; }
+ .home-modern-service-title { display:block; }
+ .home-modern-service-title b { font-size:21px; }
+ .home-modern-service-title em { display:block; margin-top:4px; font-size:8px; }
+ .home-modern-service>p { margin:0 18px 19px 58px; font-size:12px; }
+}
+/* FAQ polish: compact questions with a clear reading rhythm. */
+.faq-section { grid-template-columns:minmax(210px,.65fr) minmax(0,1.35fr); gap:clamp(38px,8vw,120px); padding:clamp(64px,9vw,118px) 0; }
+.faq-section h2 { max-width:330px; font-size:clamp(34px,4vw,58px); line-height:.98; letter-spacing:-.06em; }
+.faq-section details { padding:18px 0; border-color:#cfd8c8; }
+.faq-section summary { min-height:38px; font-size:14px; font-weight:500; color:#293f34; }
+.faq-section summary:hover { color:#70865e; }
+.faq-section details p { max-width:600px; margin-top:13px; padding-right:40px; color:#68786a; font-size:12px; line-height:1.65; }
+@media(max-width:767px) {
+ .faq-section { grid-template-columns:1fr; gap:30px; padding:58px 0 70px; }
+ .faq-section h2 { max-width:280px; font-size:clamp(34px,11vw,52px); }
+ .faq-section summary { gap:15px; font-size:13px; }
+ .faq-section details p { padding-right:0; font-size:12px; }
+}
