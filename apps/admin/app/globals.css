@@ -8,12 +8,41 @@
 .sidebar-actions{display:flex;align-items:center;gap:10px;margin-top:14px}.language-switcher select{width:auto;background:transparent;border:1px solid rgba(255,255,255,.35);color:inherit;border-radius:4px;padding:7px 5px;font-size:11px;font-weight:700;letter-spacing:.08em}.language-switcher option{color:#1d2d26;background:#f5f3ed}
 @media(max-width:800px){.sidebar{overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}.sidebar nav,.sidebar-bottom{flex-shrink:0}.sidebar-bottom{margin-top:32px}}
 
-body { font-family:'Figtree', 'Segoe UI', Arial, sans-serif; font-feature-settings:'ss01' 1, 'cv11' 1; }
-h1, h2, h3 { font-family:'Instrument Serif', Georgia, serif; font-weight:400; letter-spacing:-.012em; }
-.topbar,.sidebar nav a,.sidebar-bottom,.content,.workspace-footer,.field,.panel,.table-scroll,.list-toolbar,.row-actions,.language-tabs,.save-bar,.project-filters,.media-dialog,.upload-button,.notice,.login-form label { font-family:'Figtree', 'Segoe UI', Arial, sans-serif; }
-.wordmark { font-family:'Instrument Serif', Georgia, serif; font-weight:400; letter-spacing:-.035em; }
+body { font-family:'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; font-feature-settings:'ss01' 1, 'cv11' 1; }
+h1, h2, h3 { font-family:'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; font-weight:500; letter-spacing:-.012em; }
+.topbar,.sidebar nav a,.sidebar-bottom,.content,.workspace-footer,.field,.panel,.table-scroll,.list-toolbar,.row-actions,.language-tabs,.save-bar,.project-filters,.media-dialog,.upload-button,.notice,.login-form label { font-family:'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; }
+.wordmark { font-family:'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; font-weight:600; letter-spacing:-.035em; }
 .page-heading h1,.editorial-card h2,.login-story h1,.login-form h2 { letter-spacing:-.02em; }
-.eyebrow { font-family:'Figtree', 'Segoe UI', Arial, sans-serif; font-weight:700; letter-spacing:.2em; }
-.wordmark { font-family:Georgia, 'Times New Roman', serif; }
+.eyebrow { font-family:'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; font-weight:700; letter-spacing:.2em; }
 .media-tile video { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:#1f2d24; }
 .library-card video { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:#1f2d24; }
+
+/* Admin visual layer: same modern sans family and quieter editorial spacing as the public studio. */
+:root { --font-admin:'Plus Jakarta Sans','Segoe UI',Arial,sans-serif; }
+body { font-family:var(--font-admin); letter-spacing:-.01em; }
+h1,h2,h3,.wordmark,.stat-card strong,.editorial-card h2,.login-story h1,.login-form h2 { font-family:var(--font-admin); font-weight:600; letter-spacing:-.055em; }
+h1 { font-size:clamp(36px,4.2vw,58px); }
+.sidebar { background:#293f34; }
+.workspace { background:#f8f7f3; }
+.topbar { height:76px; }
+.content { padding-top:52px; }
+.panel,.stat-card,.editorial-card,.library-card { border-radius:8px; box-shadow:0 10px 28px rgba(36,50,42,.045); }
+.primary,.secondary,button,.upload-button { border-radius:4px; }
+.primary { background:#293f34; }
+.primary:hover { transform:translateY(-1px); }
+.panel-heading h2 { font-weight:600; }
+.language-tabs button[aria-selected=true],.category-tabs button[aria-pressed=true] { background:#293f34; }
+.gallery-grid { gap:18px; }
+.gallery-item { border-radius:7px; overflow:hidden; }
+.gallery-item img,.cover-preview { border-radius:5px; }
+.library-grid { gap:18px; }
+.library-card { overflow:hidden; }
+.library-card img,.library-card video { aspect-ratio:1.25; }
+.notice { border-radius:6px; }
+@media(max-width:800px) {
+  .mobile-header { background:#293f34; }
+  .content { padding-top:34px; }
+  .page-heading { gap:16px; }
+  .page-heading h1 { font-size:42px; }
+  .panel { box-shadow:0 7px 18px rgba(36,50,42,.04); }
+}
