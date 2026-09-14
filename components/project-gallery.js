@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { copy, projects } from '../lib/content';
+import { copy, photos, projects } from '../lib/content';
 import { getProjects, getProjectCategories, isApiConfigured, mediaUrl } from '../lib/api-client';
 import { ProjectCard } from './ui';
 
@@ -22,7 +22,7 @@ export default function ProjectGallery({ locale, featured = false, editorial = f
   let active = true;
   setLoading(true); setError(false);
   getProjects(locale, { category: selected === 'all' ? null : selected, page, page_size: featured ? 3 : 12, featured: featured ? true : undefined })
-   .then((data) => { if (active) { setItems(data.items || []); setTotal(data.total || 0); } })
+   .then((data) => { if (active) { setItems(data?.items || []); setTotal(data?.total || 0); } })
    .catch(() => { if (active) setError(true); })
    .finally(() => { if (active) setLoading(false); });
   return () => { active = false; };
@@ -35,18 +35,17 @@ export default function ProjectGallery({ locale, featured = false, editorial = f
   return () => { active = false; };
  }, [locale, live, featured, attempt]);
 
- const types = live ? [{ slug: 'all', name: c.filters[0] }, ...categories] : ['all', 'residential', 'workplace', 'hospitality'].map((slug, index) => ({ slug, name: c.filters[index] }));
- const visible = live
-  ? items.map((project) => ({ ...project, year: project.construction_year, area: project.area_sqm ? `${project.area_sqm} m²` : '', image: mediaUrl(project.image), [locale]: { title: project.title, tag: project.concept, place: project.location } }))
+ const types = live && categories.length ? [{ slug: 'all', name: c.filters[0] }, ...categories] : ['all', 'residential', 'workplace', 'hospitality'].map((slug, index) => ({ slug, name: c.filters[index] }));
+ const usingLive = live && items.length > 0;
+ const visible = usingLive
+  ? items.map((project) => ({ ...project, year: project.construction_year, area: project.area_sqm ? `${project.area_sqm} m²` : '', image: mediaUrl(project.image) || photos.architecture, [locale]: { title: project.title, tag: project.concept, place: project.location } }))
   : projects.filter((project) => selected === 'all' || project.type === selected).slice(0, featured ? 3 : 100);
 
  const retry = () => setAttempt((value) => value + 1);
  return <>
-  {!featured && <div className="project-filters"><div role="group" aria-label={locale === 'en' ? 'Filter projects' : 'Projeleri filtrele'}>{types.map((type) => <button key={type.slug} aria-pressed={selected === type.slug} onClick={() => { setSelected(type.slug); setPage(1); }}>{type.name}</button>)}</div><span aria-live="polite">{live ? total : visible.length} {c.count}</span></div>}
-  {error ? <div role="alert"><p>{locale === 'tr' ? 'Projeler şu anda yüklenemiyor.' : 'Projects are temporarily unavailable.'}</p><button onClick={retry}>{locale === 'tr' ? 'Tekrar dene' : 'Try again'}</button></div>
-   : loading ? <p role="status">{locale === 'tr' ? 'Projeler yükleniyor…' : 'Loading projects…'}</p>
-   : visible.length ? <div className={`project-grid ${featured ? 'featured-projects' : ''} ${editorial ? 'editorial-project-grid' : ''}`}>{visible.map((project, index) => <ProjectCard key={project.slug} project={project} locale={locale} editorial={editorial} index={index} />)}</div>
-   : <p role="status">{locale === 'tr' ? 'Henüz gösterilecek proje bulunmuyor.' : 'No projects to display yet.'}</p>}
-  {!featured && live && total > 12 && <nav className="project-filters" aria-label="Pagination"><button disabled={page === 1} onClick={() => setPage((value) => value - 1)}>{locale === 'tr' ? 'Önceki' : 'Previous'}</button><span>{page} / {Math.ceil(total / 12)}</span><button disabled={page * 12 >= total} onClick={() => setPage((value) => value + 1)}>{locale === 'tr' ? 'Sonraki' : 'Next'}</button></nav>}
+  {!featured && <div className="project-filters"><div role="group" aria-label={locale === 'en' ? 'Filter projects' : 'Projeleri filtrele'}>{types.map((type) => <button key={type.slug} aria-pressed={selected === type.slug} onClick={() => { setSelected(type.slug); setPage(1); }}>{type.name}</button>)}</div><span aria-live="polite">{usingLive ? total : visible.length} {c.count}</span></div>}
+  {loading ? <p role="status">{locale === 'tr' ? 'Projeler yükleniyor…' : 'Loading projects…'}</p>
+   : <>{error && <div className="content-fallback-note" role="status">{locale === 'tr' ? 'Güncel projeler gösterilemiyor; seçili projeler gösteriliyor.' : 'Live projects are unavailable; selected projects are shown instead.'}<button type="button" onClick={retry}>{locale === 'tr' ? 'Yenile' : 'Retry'}</button></div>}{visible.length ? <div className={`project-grid ${featured ? 'featured-projects' : ''} ${editorial ? 'editorial-project-grid' : ''}`}>{visible.map((project, index) => <ProjectCard key={project.slug} project={project} locale={locale} editorial={editorial} index={index} />)}</div> : <p role="status">{locale === 'tr' ? 'Henüz gösterilecek proje bulunmuyor.' : 'No projects to display yet.'}</p>}</>}
+  {!featured && usingLive && total > 12 && <nav className="project-filters" aria-label="Pagination"><button disabled={page === 1} onClick={() => setPage((value) => value - 1)}>{locale === 'tr' ? 'Önceki' : 'Previous'}</button><span>{page} / {Math.ceil(total / 12)}</span><button disabled={page * 12 >= total} onClick={() => setPage((value) => value + 1)}>{locale === 'tr' ? 'Sonraki' : 'Next'}</button></nav>}
  </>;
 }

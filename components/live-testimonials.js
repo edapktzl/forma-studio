@@ -15,7 +15,7 @@ export default function Testimonials({ locale, editorial = false }) {
   return () => { active = false; };
  }, [locale, live]);
 
- const source = live ? items : [{ id: 0, quote: c.quote, client_name: c.quoteName, role: c.quoteRole }];
+ const source = live && items.length ? items : [{ id: 0, quote: c.quote, client_name: c.quoteName, role: c.quoteRole }];
  if (!source.length) return null;
  if (!editorial) return <section className="testimonial">{source.map((item) => <div key={item.id} className="shell testimonial-inner"><span className="quote-symbol" aria-hidden="true">“</span><blockquote>{item.quote}</blockquote><div><strong>{item.client_name}</strong><span>{[item.role, item.company].filter(Boolean).join(' · ')}</span></div></div>)}</section>;
  const item = source[0];
