@@ -21,4 +21,6 @@ def test_initial_migration_can_generate_postgresql_sql():
     assert "video_media_id" in result.stdout
     assert "INSERT INTO project_categories" in result.stdout
     assert "Konut" in result.stdout
+    assert "cedar-courtyard-demo" in result.stdout
+    assert "images.pexels.com" in result.stdout
     assert "COMMIT;" in result.stdout

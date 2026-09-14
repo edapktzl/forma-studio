@@ -22,9 +22,9 @@ PASSWORD = os.getenv("FORMA_ADMIN_PASSWORD")
 SLUG = "cedar-courtyard-demo"
 
 IMAGE_URLS = [
-    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2400&q=90",
-    "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=2400&q=90",
-    "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2400&q=90",
+    "https://images.pexels.com/photos/12700453/pexels-photo-12700453.jpeg?auto=compress&cs=tinysrgb&w=2400&q=90",
+    "https://images.pexels.com/photos/24285883/pexels-photo-24285883.jpeg?auto=compress&cs=tinysrgb&w=2400&q=90",
+    "https://images.pexels.com/photos/35173051/pexels-photo-35173051.jpeg?auto=compress&cs=tinysrgb&w=2400&q=90",
 ]
 
 
@@ -56,7 +56,7 @@ def main():
         for index, image_url in enumerate(IMAGE_URLS, start=1):
             image = httpx.get(image_url, timeout=60, trust_env=False)
             image.raise_for_status()
-            uploaded = request(client, "POST", "/admin/media", expected=201, files={"file": (f"cedar-courtyard-{index}.jpg", image.content, "image/jpeg")})
+            uploaded = request(client, "POST", "/admin/media", expected=201, files={"file": (f"cedar-courtyard-pexels-{index}.jpg", image.content, "image/jpeg")})
             media.append(uploaded)
 
         video_media = None
@@ -101,7 +101,7 @@ def main():
             content["video_media_id"] = video_media["id"]
         result = request(client, "POST", "/admin/projects", expected=201, json=content)
         suffix = " and one hero video" if video_media else ""
-        print(f"Created demo project {result['id']} ({SLUG}) with {len(media)} high-resolution photographs{suffix}.")
+        print(f"Created demo project {result['id']} ({SLUG}) with {len(media)} high-resolution Pexels photographs{suffix}.")
 
 
 if __name__ == "__main__":
