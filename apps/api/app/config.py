@@ -1,7 +1,7 @@
 from functools import lru_cache
 from urllib.parse import urlsplit
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,12 +16,22 @@ class Settings(BaseSettings):
     login_rate_limit: int = Field(default=10, ge=1)
     contact_rate_limit: int = Field(default=5, ge=1)
     rate_limit_window_seconds: int = Field(default=600, ge=1)
+    media_upload_rate_limit: int = Field(default=20, ge=1)
+    media_upload_rate_window_seconds: int = Field(default=3600, ge=1)
     admin_notification_email: str = "studio@example.com"
     resend_api_key: str = ""
     mail_from: str = "Forma Studio <notifications@example.com>"
     media_storage_path: str = "storage/media"
 
     model_config = SettingsConfigDict(env_file=".env", env_prefix="", extra="ignore")
+    @field_validator("environment", mode="before")
+    @classmethod
+    def normalize_environment(cls, value):
+        normalized = str(value).strip().lower()
+        if normalized not in {"development", "production"}:
+            raise ValueError("ENVIRONMENT must be either development or production.")
+        return normalized
+
 
     @model_validator(mode="after")
     def validate_production_security(self):

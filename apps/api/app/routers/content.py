@@ -9,7 +9,7 @@ from ..database import get_db
 from ..dependencies import require_admin
 from ..models import Article, ArticleTranslation, BlogCategory, Testimonial, TestimonialTranslation
 from ..schemas.content import ArticleCreate, TestimonialCreate
-from ..services.content import bilingual, sanitize_html, translations_dict, update_translations, valid_media
+from ..services.content import IMAGE_MIME_TYPES, bilingual, sanitize_html, translations_dict, update_translations, valid_media
 
 router = APIRouter(tags=["content"])
 admin_router = APIRouter(prefix="/admin", tags=["admin-content"])
@@ -38,7 +38,7 @@ def public_article(record, language):
     if not text: raise HTTPException(404, "Translation unavailable.")
     category = next((t.name for t in record.category.translations if t.language_code == language), "") if record.category else ""
     return {"slug":record.slug, "title":text.title, "excerpt":text.excerpt, "content_html":sanitize_html(text.content_html),
-        "published_at":record.published_at, "image":record.cover.public_url if record.cover else None, "category":category}
+        "published_at":record.published_at, "image":record.cover.public_url if record.cover and not record.cover.deleted_at else None, "category":category}
 
 def check_article(record):
     bilingual({t.language_code:t for t in record.translations})
@@ -67,7 +67,7 @@ async def article_detail(slug: str, language: str = Query("en", pattern="^(en|tr
 async def testimonials(language: str = Query("en", pattern="^(en|tr)$"), db: AsyncSession = Depends(get_db)):
     records = (await db.scalars(testimonial_query().where(Testimonial.status=="published", Testimonial.deleted_at.is_(None)).order_by(Testimonial.id.desc()))).all()
     return [{**{f:getattr(r, f) for f in ("id", "client_name", "company", "role", "rating")}, "quote":next(t.quote for t in r.translations if t.language_code==language),
-        "image":r.avatar.public_url if r.avatar else None} for r in records]
+        "image":r.avatar.public_url if r.avatar and not r.avatar.deleted_at else None} for r in records]
 
 @admin_router.get("/articles")
 async def admin_articles(db: AsyncSession = Depends(get_db), admin=Depends(require_admin)):
@@ -79,7 +79,7 @@ async def get_article(identifier:int, db:AsyncSession=Depends(get_db), admin=Dep
 
 async def save_article(db, record, payload):
     bilingual(payload.translations)
-    record.cover = await valid_media(db, payload.cover_media_id)
+    record.cover = await valid_media(db, payload.cover_media_id, IMAGE_MIME_TYPES)
     record.category = await db.get(BlogCategory, payload.category_id) if payload.category_id else None
     if payload.category_id and not record.category: raise HTTPException(422, "Category unavailable.")
     record.slug, record.status, record.published_at = payload.slug, payload.status, payload.published_at
@@ -128,7 +128,7 @@ async def get_testimonial(identifier:int, db:AsyncSession=Depends(get_db), admin
 
 async def save_testimonial(db, record, payload):
     bilingual(payload.translations)
-    record.avatar = await valid_media(db, payload.avatar_media_id)
+    record.avatar = await valid_media(db, payload.avatar_media_id, IMAGE_MIME_TYPES)
     for field in ("client_name", "company", "role", "rating", "avatar_media_id", "status"):
         setattr(record, field, getattr(payload, field))
     update_translations(record, payload.translations, TestimonialTranslation)

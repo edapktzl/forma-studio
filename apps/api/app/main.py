@@ -3,14 +3,21 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .auth.rate_limit import rate_limiter
 from .routers import auth, categories, contact, content, health, media, projects, dashboard
 
 settings = get_settings()
-app = FastAPI(title=settings.app_name, version="1.0.0")
+is_prod = getattr(settings, "environment", "development") == "production"
+
+app = FastAPI(
+    title=settings.app_name,
+    version="1.0.0",
+    docs_url=None if is_prod else "/docs",
+    redoc_url=None if is_prod else "/redoc",
+    openapi_url=None if is_prod else "/openapi.json"
+)
 @app.middleware("http")
 async def browser_security(request: Request, call_next):
     path = request.url.path.rstrip("/")
@@ -54,7 +61,7 @@ app.include_router(auth.router, prefix="/api/v1")
 app.include_router(content.router, prefix="/api/v1")
 app.include_router(content.admin_router, prefix="/api/v1")
 app.include_router(media.router, prefix="/api/v1")
+app.include_router(media.public_router)
 app.include_router(dashboard.router, prefix="/api/v1")
 app.include_router(categories.public_router, prefix="/api/v1")
 app.include_router(categories.router, prefix="/api/v1")
-app.mount("/media", StaticFiles(directory=settings.media_storage_path, check_dir=False), name="media")

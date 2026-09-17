@@ -1,7 +1,12 @@
 from fastapi import HTTPException
 from sqlalchemy import select
 import nh3
+
 from ..models import MediaFile
+
+
+IMAGE_MIME_TYPES = frozenset({"image/jpeg", "image/png", "image/webp"})
+VIDEO_MIME_TYPES = frozenset({"video/mp4"})
 
 
 def bilingual(translations):
@@ -10,15 +15,27 @@ def bilingual(translations):
 
 
 def sanitize_html(value: str) -> str:
-    return nh3.clean(value, tags={"p", "br", "h2", "h3", "strong", "b", "em", "i", "ul", "ol", "li", "blockquote", "a"}, attributes={"a": {"href", "title"}}, url_schemes={"http", "https", "mailto"})
+    return nh3.clean(
+        value,
+        tags={"p", "br", "h2", "h3", "strong", "b", "em", "i", "ul", "ol", "li", "blockquote", "a"},
+        attributes={"a": {"href", "title"}},
+        url_schemes={"http", "https", "mailto"},
+    )
 
 
-async def valid_media(db, identifier):
+async def valid_media(db, identifier, allowed_mimes=None):
     if identifier is None:
         return None
-    media = await db.scalar(select(MediaFile).where(MediaFile.id == identifier, MediaFile.deleted_at.is_(None)))
+    media = await db.scalar(
+        select(MediaFile).where(
+            MediaFile.id == identifier,
+            MediaFile.deleted_at.is_(None),
+        )
+    )
     if not media:
-        raise HTTPException(422, "The selected image is unavailable.")
+        raise HTTPException(422, "The selected media is unavailable.")
+    if allowed_mimes is not None and media.mime_type not in allowed_mimes:
+        raise HTTPException(422, "The selected media type is not allowed here.")
     return media
 
 

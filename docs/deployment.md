@@ -43,7 +43,7 @@ curl --fail --retry 8 --retry-connrefused --retry-delay 5 https://api.edanurpekt
 
 Caddy obtains and renews the Let’s Encrypt certificates automatically for all four hostnames. The `forma-studio.edanurpektezel.com` host uses the existing `web:3000` container, so no new application port or container is required. Its `/data` and `/config` volumes must not be removed.
 
-Caddy applies HTTPS/security headers and limits API request bodies to 70 MB. The API accepts images up to 10 MB and MP4 hero videos up to 60 MB. The admin/API `noindex` header discourages indexing; authorization is enforced by the API. A healthy API does not prove login, content editing, contact submissions or e-mail delivery work: test these separately. Without Resend credentials, messages remain saved and notification jobs wait for configuration.
+Caddy applies HTTPS/security headers and limits API request bodies to 25 MB. The API accepts images up to 10 MB and MP4 hero videos up to 20 MB. The admin/API `noindex` header discourages indexing; authorization is enforced by the API. A healthy API does not prove login, content editing, contact submissions or e-mail delivery work: test these separately. Without Resend credentials, messages remain saved and notification jobs wait for configuration.
 
 ## GitHub Actions
 

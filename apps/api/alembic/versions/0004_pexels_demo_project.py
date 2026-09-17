@@ -98,15 +98,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.execute(
-        """
-        DELETE FROM projects
-        WHERE slug = 'cedar-courtyard-demo';
-        DELETE FROM media_files
-        WHERE storage_key IN (
-          'external/pexels-12700453.jpg',
-          'external/pexels-24285883.jpg',
-          'external/pexels-35173051.jpg'
-        );
-        """
-    )
+    pass

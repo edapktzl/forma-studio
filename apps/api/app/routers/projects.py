@@ -7,7 +7,7 @@ from ..database import get_db
 from ..dependencies import require_admin
 from ..models import Project, ProjectCategory, ProjectImage, ProjectTranslation
 from ..schemas.projects import ProjectCreate, ProjectUpdate, ProjectDetail, ProjectListItem, ProjectListResponse
-from ..services.content import bilingual, translations_dict, update_translations, valid_media
+from ..services.content import IMAGE_MIME_TYPES, VIDEO_MIME_TYPES, bilingual, translations_dict, update_translations, valid_media
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 admin_router = APIRouter(prefix="/admin/projects", tags=["admin-projects"])
@@ -64,11 +64,11 @@ async def apply_payload(db, record, payload):
     if sum(i.is_cover for i in payload.images) > 1:
         raise HTTPException(422, "Select exactly one cover image.")
     gallery = []
-    video = await valid_media(db, payload.video_media_id)
+    video = await valid_media(db, payload.video_media_id, VIDEO_MIME_TYPES)
     if video and video.mime_type != "video/mp4":
         raise HTTPException(422, "Hero video must be an MP4 file.")
     for index, image in enumerate(payload.images):
-        media = await valid_media(db, image.media_id)
+        media = await valid_media(db, image.media_id, IMAGE_MIME_TYPES)
         gallery.append(ProjectImage(media=media, media_id=image.media_id, alt_text=image.alt_text, sort_order=index, is_cover=image.is_cover))
     for key in ("slug", "category_id", "location", "area_sqm", "construction_year", "is_featured", "status"):
         setattr(record, key, getattr(payload, key))
@@ -81,7 +81,7 @@ async def apply_payload(db, record, payload):
 
 @router.get("", response_model=ProjectListResponse)
 async def list_projects(language: str = Query("en", pattern="^(en|tr)$"), category: str | None = None, featured: bool | None = None,
-                        page: int = Query(1, ge=1), page_size: int = Query(12, ge=1, le=100), db: AsyncSession = Depends(get_db)):
+                        page: int = Query(1, ge=1, le=1000), page_size: int = Query(12, ge=1, le=100), db: AsyncSession = Depends(get_db)):
     stmt = query().join(Project.category).where(Project.status == "published", Project.deleted_at.is_(None))
     if category:
         stmt = stmt.where(ProjectCategory.slug == category)
